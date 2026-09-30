@@ -48,6 +48,19 @@ export async function listMyBookingsForDate(date: string): Promise<Booking[]> {
   return (data ?? []) as Booking[];
 }
 
+export async function listTeamBookingsForDate(date: string): Promise<Booking[]> {
+  const [supabase, membership] = await Promise.all([createClient(), getCurrentMembership()]);
+  const { data, error } = await supabase
+    .from("bookings")
+    .select("*")
+    .eq("workspace_id", membership.workspaceId)
+    .eq("booking_date", date)
+    .eq("status", "confirmed")
+    .order("start_time");
+  if (error) throw new Error(error.message);
+  return (data ?? []) as Booking[];
+}
+
 export async function listUpcomingBookings(roomId?: string): Promise<Booking[]> {
   const [supabase, workspace] = await Promise.all([createClient(), requireAdmin()]);
   let query = supabase
