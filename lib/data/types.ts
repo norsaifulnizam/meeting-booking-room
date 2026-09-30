@@ -1,5 +1,6 @@
 export type Room = {
   id: string;
+  workspace_id: string;
   name: string;
   location: string | null;
   capacity: number;
@@ -9,6 +10,7 @@ export type Room = {
 
 export type Booking = {
   id: string;
+  workspace_id: string;
   room_id: string;
   booking_date: string;
   start_time: string;
