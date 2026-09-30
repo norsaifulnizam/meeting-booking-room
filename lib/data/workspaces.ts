@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { getCurrentMembership } from "./auth";
 
 export type Workspace = { id: string; slug: string; name: string };
 
@@ -7,16 +7,6 @@ export type Workspace = { id: string; slug: string; name: string };
  * team by default. Set DEFAULT_WORKSPACE_SLUG for a separate team deployment.
  */
 export async function getCurrentWorkspace(): Promise<Workspace> {
-  const supabase = await createClient();
-  const slug = process.env.DEFAULT_WORKSPACE_SLUG ?? "demo-team";
-  const { data, error } = await supabase
-    .from("workspaces")
-    .select("id, slug, name")
-    .eq("slug", slug)
-    .single();
-
-  if (error || !data) {
-    throw new Error("The selected team workspace could not be loaded.");
-  }
-  return data as Workspace;
+  const membership = await getCurrentMembership();
+  return { id: membership.workspaceId, slug: "demo-team", name: "Demo Team" };
 }

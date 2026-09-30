@@ -1,6 +1,9 @@
 import { createClient } from "@/lib/supabase/server";
 import type { Booking } from "./types";
+import { getCurrentMembership, requireAdmin } from "./auth";
 import { getCurrentWorkspace } from "./workspaces";
+
+export type BookingSlot = Pick<Booking, "room_id" | "start_time" | "end_time">;
 
 export type NewBooking = {
   room_id: string;
@@ -24,19 +27,40 @@ export async function listBookingsForDate(date: string): Promise<Booking[]> {
   return (data ?? []) as Booking[];
 }
 
+export async function listAvailabilitySlots(date: string): Promise<BookingSlot[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("availability_slots", { target_date: date });
+  if (error) throw new Error(error.message);
+  return (data ?? []) as BookingSlot[];
+}
+
+export async function listMyBookingsForDate(date: string): Promise<Booking[]> {
+  const [supabase, membership] = await Promise.all([createClient(), getCurrentMembership()]);
+  const { data, error } = await supabase
+    .from("bookings")
+    .select("*")
+    .eq("workspace_id", membership.workspaceId)
+    .eq("user_id", membership.userId)
+    .eq("booking_date", date)
+    .eq("status", "confirmed")
+    .order("start_time");
+  if (error) throw new Error(error.message);
+  return (data ?? []) as Booking[];
+}
+
 export async function listUpcomingBookings(roomId?: string): Promise<Booking[]> {
-  const [supabase, workspace] = await Promise.all([createClient(), getCurrentWorkspace()]);
+  const [supabase, workspace] = await Promise.all([createClient(), requireAdmin()]);
   let query = supabase
     .from("bookings")
     .select("*")
-    .eq("workspace_id", workspace.id)
+    .eq("workspace_id", workspace.workspaceId)
     .gte("booking_date", new Date().toISOString().slice(0, 10))
     .order("booking_date")
     .order("start_time");
   if (roomId) query = query.eq("room_id", roomId);
   const [{ data, error }, { data: rooms, error: roomsError }] = await Promise.all([
     query,
-    supabase.from("rooms").select("id, name, location").eq("workspace_id", workspace.id),
+    supabase.from("rooms").select("id, name, location").eq("workspace_id", workspace.workspaceId),
   ]);
   if (error) throw new Error(error.message);
   if (roomsError) throw new Error(roomsError.message);
@@ -49,12 +73,12 @@ export async function listUpcomingBookings(roomId?: string): Promise<Booking[]> 
 
 export async function createBooking(input: NewBooking): Promise<Booking> {
   if (input.end_time <= input.start_time) throw new Error("End time must be after start time.");
-  const [supabase, workspace] = await Promise.all([createClient(), getCurrentWorkspace()]);
+  const [supabase, membership] = await Promise.all([createClient(), getCurrentMembership()]);
   const { data: room, error: roomError } = await supabase
     .from("rooms")
     .select("id")
     .eq("id", input.room_id)
-    .eq("workspace_id", workspace.id)
+    .eq("workspace_id", membership.workspaceId)
     .eq("is_active", true)
     .maybeSingle();
   if (roomError) throw new Error(roomError.message);
@@ -62,7 +86,7 @@ export async function createBooking(input: NewBooking): Promise<Booking> {
   const { data: conflicts, error: lookupError } = await supabase
     .from("bookings")
     .select("id")
-    .eq("workspace_id", workspace.id)
+    .eq("workspace_id", membership.workspaceId)
     .eq("room_id", input.room_id)
     .eq("booking_date", input.booking_date)
     .eq("status", "confirmed")
@@ -72,9 +96,9 @@ export async function createBooking(input: NewBooking): Promise<Booking> {
   if (lookupError) throw new Error(lookupError.message);
   if (conflicts?.length) throw new Error("Room already booked for this time.");
 
-  const { data, error } = await supabase.from("bookings").insert({ ...input, workspace_id: workspace.id, status: "confirmed" }).select().single();
+  const { data, error } = await supabase.from("bookings").insert({ ...input, user_id: membership.userId, workspace_id: membership.workspaceId, status: "confirmed" }).select().single();
   if (error) {
-    if (error.code === "23505") throw new Error("Room already booked for this time.");
+    if (error.code === "23505" || error.code === "23P01") throw new Error("Room already booked for this time.");
     throw new Error(error.message);
   }
   return data as Booking;
@@ -82,12 +106,12 @@ export async function createBooking(input: NewBooking): Promise<Booking> {
 
 export async function cancelBooking(id: string, reason: string): Promise<void> {
   if (!reason.trim()) throw new Error("Please provide a cancellation reason.");
-  const [supabase, workspace] = await Promise.all([createClient(), getCurrentWorkspace()]);
+  const [supabase, membership] = await Promise.all([createClient(), getCurrentMembership()]);
   const { error } = await supabase
     .from("bookings")
     .update({ status: "cancelled", cancellation_reason: reason.trim() })
     .eq("id", id)
-    .eq("workspace_id", workspace.id)
+    .eq("workspace_id", membership.workspaceId)
     .eq("status", "confirmed");
   if (error) throw new Error(error.message);
 }
