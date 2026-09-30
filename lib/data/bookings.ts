@@ -26,14 +26,22 @@ export async function listUpcomingBookings(roomId?: string): Promise<Booking[]> 
   const supabase = await createClient();
   let query = supabase
     .from("bookings")
-    .select("*, rooms(name, location)")
+    .select("*")
     .gte("booking_date", new Date().toISOString().slice(0, 10))
     .order("booking_date")
     .order("start_time");
   if (roomId) query = query.eq("room_id", roomId);
-  const { data, error } = await query;
+  const [{ data, error }, { data: rooms, error: roomsError }] = await Promise.all([
+    query,
+    supabase.from("rooms").select("id, name, location"),
+  ]);
   if (error) throw new Error(error.message);
-  return (data ?? []) as Booking[];
+  if (roomsError) throw new Error(roomsError.message);
+  const roomsById = new Map((rooms ?? []).map((room) => [room.id, room]));
+  return (data ?? []).map((booking) => ({
+    ...booking,
+    rooms: roomsById.get(booking.room_id) ?? null,
+  })) as Booking[];
 }
 
 export async function createBooking(input: NewBooking): Promise<Booking> {
