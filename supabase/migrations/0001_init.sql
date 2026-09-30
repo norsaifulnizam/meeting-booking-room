@@ -40,9 +40,10 @@ drop policy if exists "bookings_v1_read" on bookings; create policy "bookings_v1
 drop policy if exists "bookings_v1_write" on bookings; create policy "bookings_v1_write" on bookings for all using (true) with check (true);
 
 insert into rooms (id, name, location, capacity, facilities, is_active) values
-  ('a1a1a1a1-0000-0000-0000-000000000001', 'Boardroom A', 'Floor 3', 12, '{"projector","video","whiteboard"}', true),
-  ('a1a1a1a1-0000-0000-0000-000000000002', 'Huddle Room 1', 'Floor 3', 4, '{"whiteboard","tv"}', true),
-  ('a1a1a1a1-0000-0000-0000-000000000003', 'Training Room', 'Floor 2', 30, '{"projector","video","whiteboard","ac"}', true),
+  ('a1a1a1a1-0000-0000-0000-000000000001', 'Conference Room', 'Floor 3', 12, '{"projector","video","whiteboard"}', true),
+  ('a1a1a1a1-0000-0000-0000-000000000002', 'Meeting Room', 'Floor 3', 6, '{"whiteboard","tv"}', true),
+  ('a1a1a1a1-0000-0000-0000-000000000003', 'Discussion Room', 'Floor 2', 3, '{"whiteboard"}', true),
+  ('a1a1a1a1-0000-0000-0000-000000000004', 'Phone Booth Room', 'Floor 3', 1, '{"phone","ac"}', true),
   ('a1a1a1a1-0000-0000-0000-000000000004', 'Focus Pod', 'Floor 4', 2, '{"whiteboard"}', true)
   on conflict (id) do nothing;
 
