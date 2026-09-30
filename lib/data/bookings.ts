@@ -3,7 +3,7 @@ import type { Booking } from "./types";
 import { getCurrentMembership, requireAdmin } from "./auth";
 import { getCurrentWorkspace } from "./workspaces";
 
-export type BookingSlot = Pick<Booking, "room_id" | "start_time" | "end_time">;
+export type BookingSlot = Pick<Booking, "room_id" | "start_time" | "end_time"> & { booked_by: string };
 
 export type NewBooking = {
   room_id: string;
@@ -29,7 +29,7 @@ export async function listBookingsForDate(date: string): Promise<Booking[]> {
 
 export async function listAvailabilitySlots(date: string): Promise<BookingSlot[]> {
   const supabase = await createClient();
-  const { data, error } = await supabase.rpc("availability_slots", { target_date: date });
+  const { data, error } = await supabase.rpc("team_availability_slots", { target_date: date });
   if (error) throw new Error(error.message);
   return (data ?? []) as BookingSlot[];
 }

@@ -43,8 +43,7 @@ insert into rooms (id, name, location, capacity, facilities, is_active) values
   ('a1a1a1a1-0000-0000-0000-000000000001', 'Conference Room', 'Floor 3', 12, '{"projector","video","whiteboard"}', true),
   ('a1a1a1a1-0000-0000-0000-000000000002', 'Meeting Room', 'Floor 3', 6, '{"whiteboard","tv"}', true),
   ('a1a1a1a1-0000-0000-0000-000000000003', 'Discussion Room', 'Floor 2', 3, '{"whiteboard"}', true),
-  ('a1a1a1a1-0000-0000-0000-000000000004', 'Phone Booth Room', 'Floor 3', 1, '{"phone","ac"}', true),
-  ('a1a1a1a1-0000-0000-0000-000000000004', 'Focus Pod', 'Floor 4', 2, '{"whiteboard"}', true)
+  ('a1a1a1a1-0000-0000-0000-000000000004', 'Phone Booth Room', 'Floor 3', 1, '{"phone","ac"}', true)
   on conflict (id) do nothing;
 
 insert into bookings (id, room_id, booking_date, start_time, end_time, title, organiser, attendees, status, cancellation_reason) values
