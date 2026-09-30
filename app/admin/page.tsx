@@ -1,0 +1,10 @@
+import Link from "next/link";
+import { CancelBooking } from "@/components/cancel-booking";
+import { listUpcomingBookings } from "@/lib/data/bookings";
+import { listRooms } from "@/lib/data/rooms";
+
+export default async function AdminPage({ searchParams }: { searchParams: Promise<{ room?: string }> }) {
+  const { room } = await searchParams;
+  const [rooms, bookings] = await Promise.all([listRooms(), listUpcomingBookings(room)]);
+  return <main className="app-shell"><header><div><p className="eyebrow">MEETING ROOMS</p><h1>Reservations admin</h1><p className="subtitle">Review every upcoming reservation and release rooms when plans change.</p></div><nav><Link href="/">Availability</Link><Link className="active" href="/admin">Admin</Link></nav></header><section className="date-bar"><div><span>Upcoming reservations</span><strong>{bookings.length} records</strong></div><form><select name="room" defaultValue={room ?? ""}><option value="">All rooms</option>{rooms.map((item) => <option value={item.id} key={item.id}>{item.name}</option>)}</select><button className="secondary">Filter</button></form></section><section className="panel admin-panel"><h2>Reservations</h2>{bookings.length === 0 ? <p className="muted">No upcoming reservations match this filter.</p> : <div className="reservation-table"><div className="table-head"><span>Date & time</span><span>Room</span><span>Meeting</span><span>Status</span><span>Action</span></div>{bookings.map((booking) => <div className="table-row" key={booking.id}><span>{booking.booking_date}<small>{booking.start_time.slice(0, 5)}–{booking.end_time.slice(0, 5)}</small></span><span>{booking.rooms?.name ?? "Unknown room"}<small>{booking.rooms?.location}</small></span><span><strong>{booking.title}</strong><small>{booking.organiser}{booking.attendees ? ` · ${booking.attendees}` : ""}</small></span><span className={`status ${booking.status}`}>{booking.status}</span><span>{booking.status === "confirmed" ? <CancelBooking bookingId={booking.id} /> : <small>{booking.cancellation_reason}</small>}</span></div>)}</div>}</section></main>;
+}
