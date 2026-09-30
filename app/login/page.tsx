@@ -18,7 +18,7 @@ export default function LoginPage() {
     const supabase = createClient();
     const result = mode === "sign-in"
       ? await supabase.auth.signInWithPassword({ email, password })
-      : await supabase.auth.signUp({ email, password, options: { emailRedirectTo: `${window.location.origin}/` } });
+      : await supabase.auth.signUp({ email, password, options: { emailRedirectTo: `${window.location.origin}/auth/callback` } });
     setPending(false);
     if (result.error) { setMessage(result.error.message); return; }
     setMessage(mode === "sign-up" ? "Check your office inbox to confirm your account, then sign in." : "Signed in. Loading your workspace…");
