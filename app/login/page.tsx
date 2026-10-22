@@ -38,10 +38,10 @@ export default function LoginPage() {
   const description = isReset ? "We will email a secure password reset link to your office inbox." : "Sign in to book and manage your rooms.";
 
   return <main className="login-page login-spsb"><section className="login-card">
-    <div className="login-logo"><Image src="/spsb-logo.png" width={88} height={88} priority alt="Selangor Properties logo" /></div>
+    <div className="login-logo"><Image src="/spsb-logo-white-red.png" width={100} height={78} priority alt="Selangor Properties logo" /></div>
     <div className="login-intro"><h1>{heading}</h1><p className="company-name">Selangor Properties Sdn. Bhd.</p><p className="subtitle">{description}</p></div>
     <form onSubmit={submit} className="login-form">
-      <label>Office email<input type="email" autoComplete="email" placeholder="name@selangorproperties.com.my" value={email} onChange={(event) => setEmail(event.target.value)} required /></label>
+      <label>Username<input type="email" autoComplete="email" placeholder="Email address" value={email} onChange={(event) => setEmail(event.target.value)} required /></label>
       {!isReset && <label>Password<span className="password-field"><input type={showPassword ? "text" : "password"} autoComplete={mode === "sign-in" ? "current-password" : "new-password"} minLength={6} value={password} onChange={(event) => setPassword(event.target.value)} required /><button type="button" className="password-toggle" onClick={() => setShowPassword(!showPassword)}>{showPassword ? "Hide" : "Show"}</button></span></label>}
       {mode === "sign-in" && <button type="button" className="forgot-link" onClick={() => switchMode("reset")}>Forgot password?</button>}
       {message && <p className="form-message" role="status">{message}</p>}

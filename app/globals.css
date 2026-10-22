@@ -37,25 +37,25 @@ nav a.active { color:var(--blue); background:#fff; }
 
 /* SPSB access screen */
 .login-page.login-spsb { min-height:100vh; padding:28px 16px; background:#f4f4f4; place-items:center; }
-.login-spsb .login-card { width:min(100%, 440px); padding:38px 34px 30px; border:1px solid #cbd5e1; border-top:1px solid #cbd5e1; border-radius:0; box-shadow:none; background:#fff; text-align:center; }
-.login-spsb .login-logo { width:88px; height:88px; margin:0 auto 24px; border-radius:18px; overflow:hidden; background:#000; display:grid; place-items:center; box-shadow:0 8px 18px #0f172a18; }
-.login-spsb .login-logo img { width:88px; height:88px; object-fit:cover; }
+.login-spsb .login-card { width:min(100%, 440px); padding:38px 34px 30px; border:1px solid #cbd5e1; border-top:1px solid #cbd5e1; border-radius:12px; box-shadow:0 12px 30px #0f172a0d; background:#fff; text-align:center; }
+.login-spsb .login-logo { width:100px; height:78px; margin:0 auto 24px; border-radius:14px; overflow:hidden; background:#fff; display:grid; place-items:center; }
+.login-spsb .login-logo img { width:100px; height:78px; object-fit:contain; }
 .login-spsb .login-logo span { color:#e11d2e; font-weight:800; font-size:1.2rem; letter-spacing:.08em; }
 .login-spsb .login-intro h1 { margin:0; color:#27313e; font-size:1.5rem; line-height:1.25; letter-spacing:-.02em; }
 .login-spsb .company-name { margin:6px 0 0; color:#475569; font-size:.94rem; font-weight:600; }
 .login-spsb .login-intro .subtitle { margin:28px 0 0; color:#475569; font-size:.92rem; line-height:1.55; }
 .login-spsb .login-form { text-align:left; gap:22px; margin-top:28px; }
 .login-spsb .login-form label { color:#334155; font-size:.86rem; font-weight:700; gap:8px; }
-.login-spsb .login-form input { min-height:49px; border:1px solid #94a3b8; border-radius:0; color:#334155; padding:11px 13px; font-size:.91rem; }
+.login-spsb .login-form input { min-height:49px; border:1px solid #94a3b8; border-radius:7px; color:#334155; padding:11px 13px; font-size:.91rem; }
 .login-spsb .login-form input:focus { border-color:#dc2626; box-shadow:0 0 0 3px #dc262620; }
 .login-spsb .password-field { position:relative; display:block; }
 .login-spsb .password-field input { padding-right:62px; }
 .login-spsb .password-toggle { position:absolute; right:7px; top:50%; transform:translateY(-50%); min-height:30px; padding:3px 8px; background:transparent; border:0; color:#475569; font-size:.78rem; }
 .login-spsb .password-toggle:hover,.login-spsb .forgot-link:hover { color:#be123c; }
 .login-spsb .forgot-link { justify-self:end; min-height:auto; margin-top:-13px; padding:0; border:0; background:transparent; color:#475569; font-size:.82rem; font-weight:600; }
-.login-spsb .primary { min-height:51px; margin-top:4px; border-radius:0; background:#dc2626; border-color:#dc2626; box-shadow:none; font-size:.96rem; }
+.login-spsb .primary { min-height:51px; margin-top:4px; border-radius:7px; background:#dc2626; border-color:#dc2626; box-shadow:none; font-size:.96rem; }
 .login-spsb .primary:hover { background:#b91c1c; }
-.login-spsb .form-message { margin:0; background:#f8fafc; color:#475569; border:1px solid #e2e8f0; border-radius:0; font-size:.82rem; line-height:1.45; }
+.login-spsb .form-message { margin:0; background:#f8fafc; color:#475569; border:1px solid #e2e8f0; border-radius:7px; font-size:.82rem; line-height:1.45; }
 .login-spsb .login-footer { display:grid; gap:14px; margin-top:24px; }
 .login-spsb .login-footer .text-button { justify-self:center; padding:0; color:#475569; font-size:.82rem; text-decoration:underline; text-underline-offset:3px; }
 .login-spsb .login-footer p { margin:4px 0 0; color:#475569; font-size:.82rem; }
