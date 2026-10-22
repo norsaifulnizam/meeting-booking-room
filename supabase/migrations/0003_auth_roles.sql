@@ -18,7 +18,7 @@ begin
   values (
     'c3c3c3c3-0000-0000-0000-000000000001',
     new.id,
-    case when lower(new.email) = 'norsaifulnizam@selangorproperties.com.my' then 'owner' else 'member' end
+    case when lower(new.email) in ('norsaifulnizam@selangorproperties.com.my', 'chyap@selangorproperties.com.my') then 'admin' else 'member' end
   )
   on conflict (workspace_id, user_id) do nothing;
   return new;
