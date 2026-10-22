@@ -73,7 +73,7 @@ nav a.active { color:var(--blue); background:#fff; }
 
 .brand-block .eyebrow { font-size:14px; }
 
-.hero-title { display:flex; flex-direction:column; align-items:center; gap:8px; }
-.hero-title img { width:82px; height:64px; object-fit:contain; }
+.hero-title { display:flex; align-items:center; gap:14px; }
+.hero-title img { width:68px; height:53px; object-fit:contain; }
 .hero-title h1 { font-size:1.6rem; margin:0; }
-@media (max-width:480px) { .hero-title { gap:7px; }.hero-title img { width:58px; height:45px; }.hero-title h1 { font-size:1.2rem; } }
+@media (max-width:480px) { .hero-title { gap:10px; }.hero-title img { width:48px; height:38px; }.hero-title h1 { font-size:1.2rem; } }
