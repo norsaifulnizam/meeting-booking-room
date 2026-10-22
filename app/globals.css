@@ -71,4 +71,4 @@ nav a.active { color:var(--blue); background:#fff; }
 .login-spsb .name-fields { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
 @media (max-width:480px) { .login-spsb .name-fields { grid-template-columns:1fr; gap:16px; } }
 
-.brand-block .eyebrow { font-size:12px; }
+.brand-block .eyebrow { font-size:14px; }
