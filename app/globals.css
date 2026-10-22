@@ -60,3 +60,11 @@ nav a.active { color:var(--blue); background:#fff; }
 .login-spsb .login-footer .text-button { justify-self:center; padding:0; color:#475569; font-size:.82rem; text-decoration:underline; text-underline-offset:3px; }
 .login-spsb .login-footer p { margin:4px 0 0; color:#475569; font-size:.82rem; }
 @media (max-width:480px) { .login-page.login-spsb { padding:16px; align-items:start; }.login-spsb .login-card { padding:32px 28px 26px; margin-top:20px; }.login-spsb .login-logo { width:78px; height:78px; margin-bottom:21px; }.login-spsb .login-logo img { width:78px; height:78px; }.login-spsb .login-intro h1 { font-size:1.35rem; }.login-spsb .login-intro .subtitle { margin-top:24px; }.login-spsb .login-form { margin-top:24px; } }
+.password-requirements { display:grid; gap:6px; margin:-8px 0 0; padding:0; list-style:none; font-size:.78rem; font-weight:600; }
+.password-requirements li { display:flex; align-items:center; gap:7px; color:#64748b; }
+.password-requirements li span { display:inline-grid; width:17px; height:17px; place-items:center; border-radius:50%; font-size:.68rem; line-height:1; }
+.password-requirements li.pending span { color:#64748b; border:1px solid #94a3b8; }
+.password-requirements li.met { color:#15803d; }
+.password-requirements li.met span { color:#fff; background:#16a34a; }
+.password-requirements li.unmet { color:#dc2626; }
+.password-requirements li.unmet span { color:#fff; background:#dc2626; }

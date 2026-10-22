@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { FormEvent, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { isValidPassword, PasswordRequirements } from "@/components/password-requirements";
 
 const approvedDomains = new Set([
   "menaramilenium.com.my",
@@ -32,6 +33,7 @@ export default function LoginPage() {
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault(); setMessage("");
     if (!hasApprovedDomain(email)) { setMessage(rejectedEmailMessage); return; }
+    if (mode === "sign-up" && !isValidPassword(password)) { setMessage("Your password does not meet all requirements."); return; }
     setPending(true);
     const supabase = createClient();
     const result = isReset
@@ -54,7 +56,8 @@ export default function LoginPage() {
     <div className="login-intro"><h1>{heading}</h1><p className="company-name">Selangor Properties Sdn. Bhd.</p><p className="subtitle">{description}</p></div>
     <form onSubmit={submit} className="login-form">
       <label>Username<input type="email" autoComplete="email" placeholder="Email address" value={email} onChange={(event) => setEmail(event.target.value)} required /></label>
-      {!isReset && <label>Password<span className="password-field"><input type={showPassword ? "text" : "password"} autoComplete={mode === "sign-in" ? "current-password" : "new-password"} minLength={6} value={password} onChange={(event) => setPassword(event.target.value)} required /><button type="button" className="password-toggle" onClick={() => setShowPassword(!showPassword)}>{showPassword ? "Hide" : "Show"}</button></span></label>}
+      {!isReset && <label>Password<span className="password-field"><input type={showPassword ? "text" : "password"} autoComplete={mode === "sign-in" ? "current-password" : "new-password"} minLength={8} maxLength={12} value={password} onChange={(event) => setPassword(event.target.value)} required /><button type="button" className="password-toggle" onClick={() => setShowPassword(!showPassword)}>{showPassword ? "Hide" : "Show"}</button></span></label>}
+      {mode === "sign-up" && <PasswordRequirements password={password} />}
       {mode === "sign-in" && <button type="button" className="forgot-link" onClick={() => switchMode("reset")}>Forgot password?</button>}
       {message && <p className="form-message" role="status">{message}</p>}
       <button className="primary" disabled={pending}>{pending ? "Please wait…" : isReset ? "Send reset link" : mode === "sign-up" ? "Create account" : "Sign in"}</button>
