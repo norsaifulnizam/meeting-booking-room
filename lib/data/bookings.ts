@@ -15,6 +15,17 @@ export type NewBooking = {
   attendees: string;
 };
 
+function malaysiaToday() {
+  const values = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Kuala_Lumpur",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(new Date());
+  const part = (type: string) => values.find((value) => value.type === type)?.value;
+  return `${part("year")}-${part("month")}-${part("day")}`;
+}
+
 export async function listBookingsForDate(date: string): Promise<Booking[]> {
   const [supabase, workspace] = await Promise.all([createClient(), getCurrentWorkspace()]);
   const { data, error } = await supabase
@@ -85,6 +96,13 @@ export async function listUpcomingBookings(roomId?: string): Promise<Booking[]> 
 }
 
 export async function createBooking(input: NewBooking): Promise<Booking> {
+  if (!input.room_id || !input.booking_date || !input.start_time || !input.end_time || !input.title.trim() || !input.organiser.trim()) {
+    throw new Error("Please complete the room, time, meeting title, and organiser fields.");
+  }
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(input.booking_date) || Number.isNaN(Date.parse(`${input.booking_date}T00:00:00Z`))) {
+    throw new Error("Please choose a valid booking date.");
+  }
+  if (input.booking_date < malaysiaToday()) throw new Error("Bookings must be for today or a future date.");
   if (input.end_time <= input.start_time) throw new Error("End time must be after start time.");
   const [supabase, membership] = await Promise.all([createClient(), getCurrentMembership()]);
   const { data: room, error: roomError } = await supabase
