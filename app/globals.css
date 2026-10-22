@@ -77,3 +77,8 @@ nav a.active { color:var(--blue); background:#fff; }
 .hero-title img { width:68px; height:53px; object-fit:contain; }
 .hero-title h1 { font-size:1.6rem; margin:0; }
 @media (max-width:480px) { .hero-title { gap:10px; }.hero-title img { width:48px; height:38px; }.hero-title h1 { font-size:1.2rem; } }
+.availability-hero { position:relative; justify-content:center; }
+.availability-hero .hero-status { position:absolute; right:0; bottom:25px; }
+.date-navigation { display:flex; align-items:end; gap:9px; }
+.date-navigation input { width:auto; }
+@media (max-width:760px) { .date-navigation { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:9px; }.date-navigation input { width:100%; } }
