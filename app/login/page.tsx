@@ -45,7 +45,12 @@ export default function LoginPage() {
         ? await supabase.auth.signInWithPassword({ email, password })
         : await supabase.auth.signUp({ email, password, options: { data: { first_name: firstName.trim(), last_name: lastName.trim(), full_name: `${firstName.trim()} ${lastName.trim()}` }, emailRedirectTo: `${window.location.origin}/auth/callback` } });
     setPending(false);
-    if (result.error) { setMessage(result.error.message); return; }
+    if (result.error) {
+      if (mode === "sign-up" && /already registered|already exists/i.test(result.error.message)) { setMode("sign-in"); setMessage("Account already created. Please sign in."); return; }
+      setMessage(result.error.message); return;
+    }
+    const signUpUser = ("user" in result.data ? result.data.user : undefined) as { identities?: unknown[] } | null | undefined;
+    if (mode === "sign-up" && !signUpUser?.identities?.length) { setMode("sign-in"); setMessage("Account already created. Please sign in."); return; }
     if (isReset) { setMessage("We sent a password reset link to your email. Open it to choose a new password."); return; }
     setMessage(mode === "sign-up" ? "We sent a confirmation link to your email. Open it to activate your account, then sign in." : "Signed in. Loading your workspace…");
     if (mode === "sign-in") window.location.assign("/");
