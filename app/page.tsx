@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { BookingForm } from "@/components/booking-form";
 import { CancelBooking } from "@/components/cancel-booking";
@@ -29,7 +30,7 @@ export default async function AvailabilityPage({ searchParams }: { searchParams:
 
   return <main className="app-shell executive-shell">
     <header className="app-header"><div className="brand-block"><p className="eyebrow"><i /> Hi {membership.fullName}</p><p className="location">Selangor Properties · {membership.email}</p></div><div className="header-actions"><nav aria-label="Primary navigation"><Link className="active" href="/">Availability</Link>{isAdmin && <Link href="/admin">Admin console</Link>}</nav><LogoutButton /></div></header>
-    <section className="hero"><div><h1>Maintain Room Availability</h1></div><div className="hero-status"><span className="pulse" /> Live</div></section>
+    <section className="hero"><div className="hero-title"><Image src="/spsb-logo-white-red.png" width={68} height={53} alt="Selangor Properties logo" priority /><h1>Meeting Room Booking System</h1></div><div className="hero-status"><span className="pulse" /> Live</div></section>
     <section className="date-bar"><div><span>Today</span><strong>{formatDate(date)}</strong></div><form><input aria-label="Choose date" name="date" type="date" min={today} defaultValue={date} /><button className="secondary">Change date</button></form></section>
     {loadError ? <section className="notice error">Couldn&apos;t load availability — retry.</section> : rooms.length === 0 ? <section className="notice">No rooms configured yet.</section> : <>
       <section className="availability-card"><div className="schedule-label"><strong>Floor plan schedule <small>(08:00–18:00)</small></strong><span>Swipe timeline →</span></div><div className="grid-scroll"><div className="availability-grid" style={{ gridTemplateColumns: `minmax(200px, 1.55fr) repeat(${slots.length}, minmax(76px, 1fr))` }}><div className="grid-heading">Room &amp; tier</div>{slots.map((slot) => <div className="grid-heading time" key={slot}>{slot}</div>)}{rooms.map((room) => <div key={room.id} className="grid-row"><div className="room-cell"><strong>{room.name}</strong><span>{room.location} · {room.capacity} seats</span></div>{slots.map((slot) => { const booking = bookingAt(room.id, slot); return <div className={`slot ${booking ? "booked" : "free"}`} key={slot} title={booking ? `Booked by ${booking.booked_by}` : "Free"}>{booking ? <span>{booking.booked_by}</span> : <span>Free</span>}</div>; })}</div>)}</div></div><div className="legend"><span><i className="free-dot" /> Available</span><span><i className="booked-dot" /> Booked</span><span>Live team schedule</span></div></section>

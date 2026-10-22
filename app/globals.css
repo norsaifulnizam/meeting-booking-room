@@ -72,3 +72,7 @@ nav a.active { color:var(--blue); background:#fff; }
 @media (max-width:480px) { .login-spsb .name-fields { grid-template-columns:1fr; gap:16px; } }
 
 .brand-block .eyebrow { font-size:14px; }
+
+.hero-title { display:flex; align-items:center; gap:14px; }
+.hero-title img { width:68px; height:53px; object-fit:contain; }
+@media (max-width:480px) { .hero-title { gap:10px; }.hero-title img { width:48px; height:38px; }.hero-title h1 { font-size:1.3rem; } }
