@@ -4,8 +4,20 @@ import Image from "next/image";
 import { FormEvent, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
-const officeDomain = "@selangorproperties.com.my";
+const approvedDomains = new Set([
+  "menaramilenium.com.my",
+  "selangorproperties.com.my",
+  "spbpm.com.my",
+  "thefive.com.my",
+]);
+const rejectedEmailMessage = "This user is not found in our system. Use an approved company email address.";
+
 type Mode = "sign-in" | "sign-up" | "reset";
+
+function hasApprovedDomain(value: string) {
+  const [, domain] = value.trim().toLowerCase().split("@");
+  return Boolean(domain) && approvedDomains.has(domain);
+}
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -19,7 +31,7 @@ export default function LoginPage() {
   const switchMode = (nextMode: Mode) => { setMode(nextMode); setMessage(""); setPassword(""); };
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault(); setMessage("");
-    if (!email.toLowerCase().endsWith(officeDomain)) { setMessage("Use your @selangorproperties.com.my office email."); return; }
+    if (!hasApprovedDomain(email)) { setMessage(rejectedEmailMessage); return; }
     setPending(true);
     const supabase = createClient();
     const result = isReset
@@ -29,13 +41,13 @@ export default function LoginPage() {
         : await supabase.auth.signUp({ email, password, options: { emailRedirectTo: `${window.location.origin}/auth/callback` } });
     setPending(false);
     if (result.error) { setMessage(result.error.message); return; }
-    if (isReset) { setMessage("Password reset instructions have been sent to your office inbox."); return; }
-    setMessage(mode === "sign-up" ? "Check your office inbox to confirm your account, then sign in." : "Signed in. Loading your workspace…");
+    if (isReset) { setMessage("We sent a password reset link to your email. Open it to choose a new password."); return; }
+    setMessage(mode === "sign-up" ? "We sent a confirmation link to your email. Open it to activate your account, then sign in." : "Signed in. Loading your workspace…");
     if (mode === "sign-in") window.location.assign("/");
   };
 
   const heading = isReset ? "Reset your password" : mode === "sign-up" ? "Create your account" : "Meeting Room Booking";
-  const description = isReset ? "We will email a secure password reset link to your office inbox." : "Sign in to book and manage your rooms.";
+  const description = isReset ? "We will email a secure password reset link to your email address." : "Sign in to book and manage your rooms.";
 
   return <main className="login-page login-spsb"><section className="login-card">
     <div className="login-logo"><Image src="/spsb-logo-white-red.png" width={100} height={78} priority alt="Selangor Properties logo" /></div>
@@ -48,7 +60,7 @@ export default function LoginPage() {
       <button className="primary" disabled={pending}>{pending ? "Please wait…" : isReset ? "Send reset link" : mode === "sign-up" ? "Create account" : "Sign in"}</button>
     </form>
     <div className="login-footer">
-      {mode === "sign-in" && <button className="text-button" onClick={() => switchMode("sign-up")}>New here? Create an office account</button>}
+      {mode === "sign-in" && <button className="text-button" onClick={() => switchMode("sign-up")}>New user? Create an account</button>}
       {mode === "sign-up" && <button className="text-button" onClick={() => switchMode("sign-in")}>Already have an account? Sign in</button>}
       {isReset && <button className="text-button" onClick={() => switchMode("sign-in")}>Back to sign in</button>}
       <p>Need help? Contact IT Support</p>

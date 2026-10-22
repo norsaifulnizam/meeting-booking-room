@@ -5,8 +5,13 @@ language plpgsql
 security definer set search_path = public
 as $$
 begin
-  if lower(new.email) !~ '@selangorproperties[.]com[.]my$' then
-    raise exception 'Use your @selangorproperties.com.my office email.';
+  if lower(split_part(new.email, '@', 2)) not in (
+    'menaramilenium.com.my',
+    'selangorproperties.com.my',
+    'spbpm.com.my',
+    'thefive.com.my'
+  ) then
+    raise exception 'This user is not found in our system.';
   end if;
 
   insert into public.workspace_members (workspace_id, user_id, role)
