@@ -68,3 +68,5 @@ nav a.active { color:var(--blue); background:#fff; }
 .password-requirements li.met span { color:#fff; background:#16a34a; }
 .password-requirements li.unmet { color:#dc2626; }
 .password-requirements li.unmet span { color:#fff; background:#dc2626; }
+.login-spsb .name-fields { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+@media (max-width:480px) { .login-spsb .name-fields { grid-template-columns:1fr; gap:16px; } }

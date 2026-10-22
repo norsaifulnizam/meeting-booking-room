@@ -21,6 +21,8 @@ function hasApprovedDomain(value: string) {
 }
 
 export default function LoginPage() {
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [mode, setMode] = useState<Mode>("sign-in");
@@ -33,6 +35,7 @@ export default function LoginPage() {
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault(); setMessage("");
     if (!hasApprovedDomain(email)) { setMessage(rejectedEmailMessage); return; }
+    if (mode === "sign-up" && (!firstName.trim() || !lastName.trim())) { setMessage("Enter your first and last name."); return; }
     if (mode === "sign-up" && !isValidPassword(password)) { setMessage("Your password does not meet all requirements."); return; }
     setPending(true);
     const supabase = createClient();
@@ -40,7 +43,7 @@ export default function LoginPage() {
       ? await supabase.auth.resetPasswordForEmail(email, { redirectTo: `${window.location.origin}/auth/callback?next=/reset-password` })
       : mode === "sign-in"
         ? await supabase.auth.signInWithPassword({ email, password })
-        : await supabase.auth.signUp({ email, password, options: { emailRedirectTo: `${window.location.origin}/auth/callback` } });
+        : await supabase.auth.signUp({ email, password, options: { data: { first_name: firstName.trim(), last_name: lastName.trim(), full_name: `${firstName.trim()} ${lastName.trim()}` }, emailRedirectTo: `${window.location.origin}/auth/callback` } });
     setPending(false);
     if (result.error) { setMessage(result.error.message); return; }
     if (isReset) { setMessage("We sent a password reset link to your email. Open it to choose a new password."); return; }
@@ -55,6 +58,7 @@ export default function LoginPage() {
     <div className="login-logo"><Image src="/spsb-logo-white-red.png" width={100} height={78} priority alt="Selangor Properties logo" /></div>
     <div className="login-intro"><h1>{heading}</h1><p className="company-name">Selangor Properties Sdn. Bhd.</p><p className="subtitle">{description}</p></div>
     <form onSubmit={submit} className="login-form">
+      {mode === "sign-up" && <div className="name-fields"><label>First name<input autoComplete="given-name" placeholder="First name" value={firstName} onChange={(event) => setFirstName(event.target.value)} required /></label><label>Last name<input autoComplete="family-name" placeholder="Last name" value={lastName} onChange={(event) => setLastName(event.target.value)} required /></label></div>}
       <label>Username<input type="email" autoComplete="email" placeholder="Email address" value={email} onChange={(event) => setEmail(event.target.value)} required /></label>
       {!isReset && <label>Password<span className="password-field"><input type={showPassword ? "text" : "password"} autoComplete={mode === "sign-in" ? "current-password" : "new-password"} minLength={8} maxLength={12} value={password} onChange={(event) => setPassword(event.target.value)} required /><button type="button" className="password-toggle" onClick={() => setShowPassword(!showPassword)}>{showPassword ? "Hide" : "Show"}</button></span></label>}
       {mode === "sign-up" && <PasswordRequirements password={password} />}

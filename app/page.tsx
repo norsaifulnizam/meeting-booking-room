@@ -28,7 +28,7 @@ export default async function AvailabilityPage({ searchParams }: { searchParams:
   };
 
   return <main className="app-shell executive-shell">
-    <header className="app-header"><div className="brand-block"><p className="eyebrow"><i /> EXECUTIVE SUITES</p><p className="location">Selangor Properties · {membership.email}</p></div><div className="header-actions"><nav aria-label="Primary navigation"><Link className="active" href="/">Availability</Link>{isAdmin && <Link href="/admin">Admin console</Link>}</nav><LogoutButton /></div></header>
+    <header className="app-header"><div className="brand-block"><p className="eyebrow"><i /> Hi {membership.fullName}</p><p className="location">Selangor Properties · {membership.email}</p></div><div className="header-actions"><nav aria-label="Primary navigation"><Link className="active" href="/">Availability</Link>{isAdmin && <Link href="/admin">Admin console</Link>}</nav><LogoutButton /></div></header>
     <section className="hero"><div><p className="eyebrow"><i /> REAL-TIME DESK</p><h1>Room availability</h1><p className="subtitle">Live schedule and instant booking engine for executive conference facilities.</p></div><div className="hero-status"><span className="pulse" /> Live</div></section>
     <section className="date-bar"><div><span>Timeline filter</span><strong>{formatDate(date)}</strong></div><form><input aria-label="Choose date" name="date" type="date" min={today} defaultValue={date} /><button className="secondary">Change date</button></form></section>
     {loadError ? <section className="notice error">Couldn&apos;t load availability — retry.</section> : rooms.length === 0 ? <section className="notice">No rooms configured yet.</section> : <>
