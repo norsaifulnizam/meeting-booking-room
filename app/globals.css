@@ -87,3 +87,4 @@ nav a.active { color:var(--blue); background:#fff; }
 .hero-title h1 { font-size:1.85rem; }
 .date-bar strong { font-size:1.05rem; }
 @media (max-width:480px) { .hero-title h1 { font-size:1.35rem; }.schedule-label strong { font-size:.93rem; }.date-bar strong { font-size:.98rem; } }
+.grid-heading.time { white-space:nowrap; padding-inline:4px; }
