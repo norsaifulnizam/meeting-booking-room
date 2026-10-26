@@ -104,6 +104,7 @@ export async function createBooking(input: NewBooking): Promise<Booking> {
   }
   if (input.booking_date < malaysiaToday()) throw new Error("Bookings must be for today or a future date.");
   if (input.end_time <= input.start_time) throw new Error("End time must be after start time.");
+  if (input.start_time < "09:00" || input.end_time > "18:00") throw new Error("Bookings are available from 9:00 AM to 6:00 PM.");
   const [supabase, membership] = await Promise.all([createClient(), getCurrentMembership()]);
   const { data: room, error: roomError } = await supabase
     .from("rooms")
