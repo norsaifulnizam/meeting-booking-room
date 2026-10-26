@@ -136,6 +136,67 @@ export async function createBooking(input: NewBooking): Promise<Booking> {
   return data as Booking;
 }
 
+export async function updateBooking(id: string, input: NewBooking): Promise<Booking> {
+  if (!id || !input.room_id || !input.booking_date || !input.start_time || !input.end_time || !input.title.trim() || !input.organiser.trim()) {
+    throw new Error("Please complete the room, date, time, meeting title, and organiser fields.");
+  }
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(input.booking_date) || Number.isNaN(Date.parse(`${input.booking_date}T00:00:00Z`))) {
+    throw new Error("Please choose a valid booking date.");
+  }
+  if (input.booking_date < malaysiaToday()) throw new Error("Bookings must be for today or a future date.");
+  if (input.end_time <= input.start_time) throw new Error("End time must be after start time.");
+  if (input.start_time < "09:00" || input.end_time > "18:00") throw new Error("Bookings are available from 9:00 AM to 6:00 PM.");
+
+  const [supabase, membership] = await Promise.all([createClient(), getCurrentMembership()]);
+  const { data: existing, error: existingError } = await supabase
+    .from("bookings")
+    .select("user_id")
+    .eq("id", id)
+    .eq("workspace_id", membership.workspaceId)
+    .eq("status", "confirmed")
+    .maybeSingle();
+  if (existingError) throw new Error(existingError.message);
+  if (!existing) throw new Error("This booking is no longer available to edit.");
+  if (existing.user_id !== membership.userId && membership.role === "member") throw new Error("You can only edit your own bookings.");
+
+  const { data: room, error: roomError } = await supabase
+    .from("rooms")
+    .select("id")
+    .eq("id", input.room_id)
+    .eq("workspace_id", membership.workspaceId)
+    .eq("is_active", true)
+    .maybeSingle();
+  if (roomError) throw new Error(roomError.message);
+  if (!room) throw new Error("That room is not available to this team.");
+
+  const { data: conflicts, error: lookupError } = await supabase
+    .from("bookings")
+    .select("id")
+    .eq("workspace_id", membership.workspaceId)
+    .eq("room_id", input.room_id)
+    .eq("booking_date", input.booking_date)
+    .eq("status", "confirmed")
+    .neq("id", id)
+    .lt("start_time", input.end_time)
+    .gt("end_time", input.start_time)
+    .limit(1);
+  if (lookupError) throw new Error(lookupError.message);
+  if (conflicts?.length) throw new Error("Room already booked for this time.");
+
+  const { data, error } = await supabase
+    .from("bookings")
+    .update({ ...input, cancellation_reason: null })
+    .eq("id", id)
+    .eq("workspace_id", membership.workspaceId)
+    .eq("status", "confirmed")
+    .select()
+    .single();
+  if (error) {
+    if (error.code === "23505" || error.code === "23P01") throw new Error("Room already booked for this time.");
+    throw new Error(error.message);
+  }
+  return data as Booking;
+}
 export async function cancelBooking(id: string, reason: string): Promise<void> {
   if (!reason.trim()) throw new Error("Please provide a cancellation reason.");
   const [supabase, membership] = await Promise.all([createClient(), getCurrentMembership()]);
