@@ -1,4 +1,5 @@
 -- Include each meeting's details for individual availability-cell hover tooltips.
+drop function if exists public.team_availability_slots(date);
 create or replace function public.team_availability_slots(target_date date)
 returns table(room_id uuid, start_time time, end_time time, booked_by text, meeting_title text, attendees text)
 language sql stable security definer set search_path = public, auth
