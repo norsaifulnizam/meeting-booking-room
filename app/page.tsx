@@ -13,7 +13,12 @@ const slots = Array.from({ length: 9 }, (_, index) => `${String(index + 9).padSt
 const malaysiaDate = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Kuala_Lumpur", year: "numeric", month: "2-digit", day: "2-digit" }).formatToParts(new Date());
 const today = `${malaysiaDate.find((part) => part.type === "year")?.value}-${malaysiaDate.find((part) => part.type === "month")?.value}-${malaysiaDate.find((part) => part.type === "day")?.value}`;
 const formatDate = (date: string) => new Intl.DateTimeFormat("en-MY", { weekday: "long", day: "numeric", month: "long", year: "numeric" }).format(new Date(`${date}T00:00:00`));
-const formatTime = (value: string) => new Intl.DateTimeFormat("en-MY", { hour: "numeric", hour12: true }).format(new Date(`1970-01-01T${value.slice(0, 5)}:00`));
+const formatTime = (value: string) => {
+  const [hour, minute] = value.slice(0, 5).split(":").map(Number);
+  const period = hour >= 12 ? "PM" : "AM";
+  const displayHour = hour % 12 || 12;
+  return `${displayHour}${minute ? `:${String(minute).padStart(2, "0")}` : ""} ${period}`;
+};
 const formatTimeRange = (slot: string) => {
   const [hour] = slot.split(":").map(Number);
   const endHour = hour + 1;
