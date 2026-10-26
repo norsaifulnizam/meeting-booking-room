@@ -29,10 +29,32 @@ export default async function AvailabilityPage({ searchParams }: { searchParams:
   const membership = await getCurrentMembership();
   const isAdmin = membership.role === "owner" || membership.role === "admin";
   try { [rooms, availabilitySlots, bookings] = await Promise.all([listRooms(), listAvailabilitySlots(date), listTeamBookingsForDate(date)]); } catch { loadError = true; }
-  const bookingAt = (roomId: string, slot: string) => {
+  const bookingsAt = (roomId: string, slot: string) => {
     const [hour] = slot.split(":").map(Number);
     const slotEnd = `${String(hour + 1).padStart(2, "0")}:00`;
-    return availabilitySlots.find((booking) => booking.room_id === roomId && booking.start_time.slice(0, 5) < slotEnd && booking.end_time.slice(0, 5) > slot);
+    return availabilitySlots
+      .filter((booking) => booking.room_id === roomId && booking.start_time.slice(0, 5) < slotEnd && booking.end_time.slice(0, 5) > slot)
+      .sort((first, second) => first.start_time.localeCompare(second.start_time));
+  };
+  const minuteOfDay = (value: string) => {
+    const [hour, minute] = value.slice(0, 5).split(":").map(Number);
+    return hour * 60 + minute;
+  };
+  const slotStyle = (slot: string, slotBookings: Awaited<ReturnType<typeof listAvailabilitySlots>>) => {
+    const [hour] = slot.split(":").map(Number);
+    const slotStart = hour * 60;
+    const slotEnd = slotStart + 60;
+    let cursor = 0;
+    const stops: string[] = [];
+    for (const booking of slotBookings) {
+      const start = Math.max(0, ((Math.max(slotStart, minuteOfDay(booking.start_time)) - slotStart) / 60) * 100);
+      const end = Math.min(100, ((Math.min(slotEnd, minuteOfDay(booking.end_time)) - slotStart) / 60) * 100);
+      if (start > cursor) stops.push(`#ecfdf5 ${cursor}%`, `#ecfdf5 ${start}%`);
+      stops.push(`#fff1f2 ${start}%`, `#fff1f2 ${end}%`);
+      cursor = Math.max(cursor, end);
+    }
+    if (cursor < 100) stops.push(`#ecfdf5 ${cursor}%`, `#ecfdf5 100%`);
+    return { background: `linear-gradient(90deg, ${stops.join(", ")})` };
   };
 
   return <main className="app-shell executive-shell">
@@ -40,7 +62,7 @@ export default async function AvailabilityPage({ searchParams }: { searchParams:
     <section className="hero availability-hero"><div className="hero-title"><Image src="/spsb-logo-white-red.png" width={68} height={53} alt="Selangor Properties logo" priority /><h1>Meeting Room Booking</h1></div><div className="hero-status"><span className="pulse" /> Live</div></section>
     <section className="date-bar"><div><strong>{formatDate(date)}</strong></div><DateNavigation date={date} today={today} /></section>
     {loadError ? <section className="notice error">Couldn&apos;t load availability — retry.</section> : rooms.length === 0 ? <section className="notice">No rooms configured yet.</section> : <>
-      <section className="availability-card"><div className="schedule-label"><strong>Room Availability <small>(8 AM–6 PM)</small></strong></div><div className="grid-scroll"><div className="availability-grid" style={{ gridTemplateColumns: `minmax(200px, 1.55fr) repeat(${slots.length}, minmax(76px, 1fr))` }}><div className="grid-heading">Room</div>{slots.map((slot) => <div className="grid-heading time" key={slot}>{formatTimeRange(slot)}</div>)}{rooms.map((room) => <div key={room.id} className="grid-row"><div className="room-cell"><strong>{room.name}</strong><span>{room.location} · {room.capacity} seats</span></div>{slots.map((slot) => { const booking = bookingAt(room.id, slot); return <div className={`slot ${booking ? "booked" : "free"}`} key={slot} title={booking ? `Booked by ${booking.booked_by}` : "Free"}>{booking ? <span>{booking.booked_by}</span> : <span>Free</span>}</div>; })}</div>)}</div></div><div className="legend"><span><i className="free-dot" /> Available</span><span><i className="booked-dot" /> Booked</span></div></section>
+      <section className="availability-card"><div className="schedule-label"><strong>Room Availability <small>(8 AM–6 PM)</small></strong></div><div className="grid-scroll"><div className="availability-grid" style={{ gridTemplateColumns: `minmax(200px, 1.55fr) repeat(${slots.length}, minmax(76px, 1fr))` }}><div className="grid-heading">Room</div>{slots.map((slot) => <div className="grid-heading time" key={slot}>{formatTimeRange(slot)}</div>)}{rooms.map((room) => <div key={room.id} className="grid-row"><div className="room-cell"><strong>{room.name}</strong><span>{room.location} · {room.capacity} seats</span></div>{slots.map((slot) => { const slotBookings = bookingsAt(room.id, slot); const booking = slotBookings[0]; return <div className={`slot ${booking ? "booked" : "free"}`} key={slot} style={booking ? slotStyle(slot, slotBookings) : undefined} title={booking ? slotBookings.map((entry) => `Booked by ${entry.booked_by}: ${entry.start_time.slice(0, 5)}–${entry.end_time.slice(0, 5)}`).join("\n") : "Free"}>{booking ? <span>{booking.booked_by}</span> : <span>Free</span>}</div>; })}</div>)}</div></div><div className="legend"><span><i className="free-dot" /> Available</span><span><i className="booked-dot" /> Booked</span></div></section>
       <section className="content-grid"><div className="panel booking-panel"><p className="eyebrow">RESERVATION DESK</p><h2>Book an executive space</h2><p className="muted">All room reservations conform to internal booking policies.</p><BookingForm rooms={rooms} date={date} /></div><div className="panel current-bookings"><div className="panel-heading"><div><p className="eyebrow">DAILY DISPATCH</p><h2>Confirmed bookings</h2></div><span className="count-chip">{bookings.length} active</span></div>{bookings.length === 0 ? <p className="muted">There are no confirmed bookings for this date.</p> : <div className="booking-list">{bookings.map((booking) => <article key={booking.id}><div><strong>{booking.title}</strong><p>{rooms.find((room) => room.id === booking.room_id)?.name} · {booking.start_time.slice(0, 5)}–{booking.end_time.slice(0, 5)}</p><small>Organised by {booking.organiser}{booking.attendees ? ` · ${booking.attendees} attendees` : ""}</small></div>{(booking.user_id === membership.userId || isAdmin) && <CancelBooking bookingId={booking.id} />}</article>)}</div>}</div></section>
     </>}
     <nav className="mobile-nav" aria-label="Mobile navigation"><Link className="active" href="/">Availability</Link>{isAdmin && <Link href="/admin">Admin</Link>}</nav>
