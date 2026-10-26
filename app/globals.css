@@ -88,3 +88,5 @@ nav a.active { color:var(--blue); background:#fff; }
 .date-bar strong { font-size:1.05rem; }
 @media (max-width:480px) { .hero-title h1 { font-size:1.35rem; }.schedule-label strong { font-size:.93rem; }.date-bar strong { font-size:.98rem; } }
 .grid-heading.time { white-space:nowrap; padding-inline:4px; }
+.slot.booked { position:relative; display:block; padding:0; overflow:hidden; }
+.slot .booking-label { position:absolute; top:0; bottom:0; display:grid; min-width:0; place-items:center; padding:2px; overflow:hidden; color:var(--crimson); font-size:.62rem; font-weight:700; line-height:1.05; text-align:center; text-overflow:ellipsis; white-space:nowrap; }
