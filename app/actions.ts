@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { cancelBooking, createBooking, updateBooking } from "@/lib/data/bookings";
+import { cancelBooking, createBooking, removeWorkspaceUser, updateBooking } from "@/lib/data/bookings";
 
 export type ActionState = { error?: string; success?: string };
 
@@ -50,5 +50,15 @@ export async function cancelBookingAction(_: ActionState, formData: FormData): P
     return { success: "Booking cancelled. The room is free again." };
   } catch (error) {
     return { error: error instanceof Error ? error.message : "Couldn't cancel the booking." };
+  }
+}
+
+export async function removeWorkspaceUserAction(_: ActionState, formData: FormData): Promise<ActionState> {
+  try {
+    await removeWorkspaceUser(String(formData.get("user_id") ?? ""));
+    revalidatePath("/admin");
+    return { success: "User access removed." };
+  } catch (error) {
+    return { error: error instanceof Error ? error.message : "Couldn't remove user access." };
   }
 }

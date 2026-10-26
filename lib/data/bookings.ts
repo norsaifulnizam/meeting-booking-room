@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
-import type { AdminBooking, Booking } from "./types";
+import type { AdminBooking, Booking, WorkspaceUser } from "./types";
 import { getCurrentMembership, requireAdmin } from "./auth";
 import { getCurrentWorkspace } from "./workspaces";
 
@@ -86,6 +86,23 @@ export async function listUpcomingBookings(roomId?: string): Promise<AdminBookin
     ...booking,
     rooms: roomsById.get(booking.room_id) ?? null,
   }));
+}
+
+export async function listWorkspaceUsers(): Promise<WorkspaceUser[]> {
+  const [supabase, membership] = await Promise.all([createClient(), requireAdmin()]);
+  const { data, error } = await supabase.rpc("workspace_user_directory", { target_workspace: membership.workspaceId });
+  if (error) throw new Error(error.message);
+  return (data ?? []) as WorkspaceUser[];
+}
+
+export async function removeWorkspaceUser(userId: string) {
+  const [supabase, membership] = await Promise.all([createClient(), requireAdmin()]);
+  if (!userId) throw new Error("Choose a user to remove.");
+  const { error } = await supabase.rpc("remove_workspace_member", {
+    target_workspace: membership.workspaceId,
+    target_user: userId,
+  });
+  if (error) throw new Error(error.message);
 }
 
 export async function createBooking(input: NewBooking): Promise<Booking> {

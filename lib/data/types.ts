@@ -28,3 +28,11 @@ export type Booking = {
 export type AdminBooking = Booking & {
   booked_by_email: string;
 };
+
+export type WorkspaceUser = {
+  user_id: string;
+  email: string;
+  full_name: string;
+  role: "owner" | "admin" | "member";
+  joined_at: string;
+};
