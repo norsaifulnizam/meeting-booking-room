@@ -101,3 +101,14 @@ nav a.active { color:var(--blue); background:#fff; }
 .edit-controls { display:flex; gap:8px; justify-content:flex-end; }
 .edit-controls .primary { width:auto; min-height:36px; margin:0; padding-inline:14px; font-size:.76rem; }
 @media (max-width:760px) { .booking-actions { justify-items:stretch; }.edit-booking-form { width:100%; }.edit-row { grid-template-columns:1fr; }.edit-controls { display:grid; grid-template-columns:1fr 1fr; } }
+
+@keyframes live-indicator-pulse {
+  0%, 100% { opacity:1; box-shadow:0 0 0 4px #10b98120; }
+  50% { opacity:.55; box-shadow:0 0 0 8px #10b98100; }
+}
+
+.hero-status .pulse { animation:live-indicator-pulse 1.35s ease-in-out infinite; }
+
+@media (prefers-reduced-motion:reduce) {
+  .hero-status .pulse { animation:none; }
+}
