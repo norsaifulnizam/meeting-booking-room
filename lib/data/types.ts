@@ -24,3 +24,7 @@ export type Booking = {
   created_at: string;
   rooms?: Pick<Room, "name" | "location"> | null;
 };
+
+export type AdminBooking = Booking & {
+  booked_by_email: string;
+};

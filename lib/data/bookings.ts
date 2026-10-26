@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
-import type { Booking } from "./types";
+import type { AdminBooking, Booking } from "./types";
 import { getCurrentMembership, requireAdmin } from "./auth";
 import { getCurrentWorkspace } from "./workspaces";
 
@@ -72,27 +72,20 @@ export async function listTeamBookingsForDate(date: string): Promise<Booking[]> 
   return (data ?? []) as Booking[];
 }
 
-export async function listUpcomingBookings(roomId?: string): Promise<Booking[]> {
+export async function listUpcomingBookings(roomId?: string): Promise<AdminBooking[]> {
   const [supabase, workspace] = await Promise.all([createClient(), requireAdmin()]);
-  let query = supabase
-    .from("bookings")
-    .select("*")
-    .eq("workspace_id", workspace.workspaceId)
-    .gte("booking_date", new Date().toISOString().slice(0, 10))
-    .order("booking_date")
-    .order("start_time");
-  if (roomId) query = query.eq("room_id", roomId);
   const [{ data, error }, { data: rooms, error: roomsError }] = await Promise.all([
-    query,
+    supabase.rpc("admin_upcoming_bookings", { target_workspace: workspace.workspaceId, target_room: roomId ?? null }),
     supabase.from("rooms").select("id, name, location").eq("workspace_id", workspace.workspaceId),
   ]);
   if (error) throw new Error(error.message);
   if (roomsError) throw new Error(roomsError.message);
   const roomsById = new Map((rooms ?? []).map((room) => [room.id, room]));
-  return (data ?? []).map((booking) => ({
+  const adminBookings = (data ?? []) as AdminBooking[];
+  return adminBookings.map((booking) => ({
     ...booking,
     rooms: roomsById.get(booking.room_id) ?? null,
-  })) as Booking[];
+  }));
 }
 
 export async function createBooking(input: NewBooking): Promise<Booking> {
