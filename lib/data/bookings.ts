@@ -3,7 +3,7 @@ import type { Booking } from "./types";
 import { getCurrentMembership, requireAdmin } from "./auth";
 import { getCurrentWorkspace } from "./workspaces";
 
-export type BookingSlot = Pick<Booking, "room_id" | "start_time" | "end_time"> & { booked_by: string };
+export type BookingSlot = Pick<Booking, "room_id" | "start_time" | "end_time" | "attendees"> & { booked_by: string; meeting_title: string };
 
 export type NewBooking = {
   room_id: string;
