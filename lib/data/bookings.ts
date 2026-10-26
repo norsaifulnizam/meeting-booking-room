@@ -72,6 +72,21 @@ export async function listTeamBookingsForDate(date: string): Promise<Booking[]> 
   return (data ?? []) as Booking[];
 }
 
+export async function listTeamBookingsForRange(startDate: string, endDate: string): Promise<Booking[]> {
+  const [supabase, membership] = await Promise.all([createClient(), getCurrentMembership()]);
+  const { data, error } = await supabase
+    .from("bookings")
+    .select("*")
+    .eq("workspace_id", membership.workspaceId)
+    .eq("status", "confirmed")
+    .gte("booking_date", startDate)
+    .lte("booking_date", endDate)
+    .order("booking_date")
+    .order("start_time");
+  if (error) throw new Error(error.message);
+  return (data ?? []) as Booking[];
+}
+
 export async function listUpcomingBookings(roomId?: string): Promise<AdminBooking[]> {
   const [supabase, workspace] = await Promise.all([createClient(), requireAdmin()]);
   const [{ data, error }, { data: rooms, error: roomsError }] = await Promise.all([

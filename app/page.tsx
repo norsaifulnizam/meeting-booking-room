@@ -1,11 +1,12 @@
 import Image from "next/image";
 import Link from "next/link";
 import { BookingForm } from "@/components/booking-form";
+import { CalendarOverview, calendarRange } from "@/components/calendar-overview";
 import { CancelBooking } from "@/components/cancel-booking";
 import { DateNavigation } from "@/components/date-navigation";
 import { EditBooking } from "@/components/edit-booking";
 import { LogoutButton } from "@/components/logout-button";
-import { listAvailabilitySlots, listTeamBookingsForDate } from "@/lib/data/bookings";
+import { listAvailabilitySlots, listTeamBookingsForDate, listTeamBookingsForRange } from "@/lib/data/bookings";
 import { getCurrentMembership } from "@/lib/data/auth";
 import { listRooms } from "@/lib/data/rooms";
 
@@ -29,16 +30,19 @@ const formatTimeRange = (slot: string) => {
     : `${hourLabel(hour)} ${period(hour)}–${hourLabel(endHour)} ${period(endHour)}`;
 };
 
-export default async function AvailabilityPage({ searchParams }: { searchParams: Promise<{ date?: string }> }) {
-  const { date: requestedDate } = await searchParams;
+export default async function AvailabilityPage({ searchParams }: { searchParams: Promise<{ date?: string; view?: string }> }) {
+  const { date: requestedDate, view: requestedView } = await searchParams;
   const date = /^\d{4}-\d{2}-\d{2}$/.test(requestedDate ?? "") ? requestedDate! : today;
+  const view = requestedView === "week" || requestedView === "month" ? requestedView : "day";
+  const range = view === "day" ? null : calendarRange(view, date);
   let rooms = [] as Awaited<ReturnType<typeof listRooms>>;
   let availabilitySlots = [] as Awaited<ReturnType<typeof listAvailabilitySlots>>;
   let bookings = [] as Awaited<ReturnType<typeof listTeamBookingsForDate>>;
+  let overviewBookings = [] as Awaited<ReturnType<typeof listTeamBookingsForRange>>;
   let loadError = false;
   const membership = await getCurrentMembership();
   const isAdmin = membership.role === "owner" || membership.role === "admin";
-  try { [rooms, availabilitySlots, bookings] = await Promise.all([listRooms(), listAvailabilitySlots(date), listTeamBookingsForDate(date)]); } catch { loadError = true; }
+  try { [rooms, availabilitySlots, bookings, overviewBookings] = await Promise.all([listRooms(), listAvailabilitySlots(date), listTeamBookingsForDate(date), range ? listTeamBookingsForRange(range.start, range.end) : Promise.resolve([])]); } catch { loadError = true; }
   const bookingsAt = (roomId: string, slot: string) => {
     const [hour] = slot.split(":").map(Number);
     const slotEnd = `${String(hour + 1).padStart(2, "0")}:00`;
@@ -71,10 +75,11 @@ export default async function AvailabilityPage({ searchParams }: { searchParams:
     return { background: `linear-gradient(90deg, ${stops.join(", ")})` };
   };
 
-  return <main className="app-shell executive-shell">
+  return <main className={"app-shell executive-shell calendar-" + view}>
     <header className="app-header"><div className="brand-block"><p className="eyebrow"><i /> Hi {membership.fullName}</p><p className="location">Selangor Properties · {membership.email}</p></div><div className="header-actions"><nav aria-label="Primary navigation"><Link className="active" href="/">Availability</Link>{isAdmin && <Link href="/admin">Admin console</Link>}</nav><LogoutButton /></div></header>
     <section className="hero availability-hero"><div className="hero-title"><Image src="/spsb-logo-white-red.png" width={68} height={53} alt="Selangor Properties logo" priority /><h1>Meeting Room Booking</h1></div><div className="hero-status"><span className="pulse" /> Live</div></section>
-    <section className="date-bar"><div><strong>{formatDate(date)}</strong></div><DateNavigation date={date} today={today} /></section>
+    <section className="date-bar"><div><strong>{formatDate(date)}</strong></div><DateNavigation date={date} today={today} view={view} /></section>
+    {!loadError && rooms.length > 0 && view !== "day" && <CalendarOverview view={view} date={date} rooms={rooms} bookings={overviewBookings} />}
     {loadError ? <section className="notice error">Couldn&apos;t load availability — retry.</section> : rooms.length === 0 ? <section className="notice">No rooms configured yet.</section> : <>
       <section className="availability-card"><div className="schedule-label"><strong>Room Availability <small>(9 AM–6 PM)</small></strong></div><div className="grid-scroll"><div className="availability-grid" style={{ gridTemplateColumns: `minmax(150px, 1.1fr) repeat(${slots.length}, minmax(82px, 1fr))` }}><div className="grid-heading">Room</div>{slots.map((slot) => <div className="grid-heading time" key={slot}>{formatTimeRange(slot)}</div>)}{rooms.map((room) => <div key={room.id} className="grid-row"><div className="room-cell"><strong>{room.name}</strong><span>{room.capacity} seats</span></div>{slots.map((slot) => { const slotBookings = bookingsAt(room.id, slot); const booking = slotBookings[0]; return <div className={`slot ${booking ? "booked" : "free"}`} key={slot} style={booking ? slotStyle(slot, slotBookings) : undefined} title={booking ? undefined : "Free"}>{booking ? <><span className="free-portion" title="Free" />{slotBookings.map((entry) => { const { start, end } = bookingPosition(slot, entry); const details = [`Meeting: ${entry.meeting_title}`, `Organised by: ${entry.booked_by}`, `Time: ${formatTime(entry.start_time)}–${formatTime(entry.end_time)}`, entry.attendees ? `Attendees: ${entry.attendees}` : ""].filter(Boolean).join("\n"); return <span className="booking-label" key={`${entry.booked_by}-${entry.start_time}`} style={{ left: `${start}%`, width: `${end - start}%` }} title={details}>{entry.booked_by}</span>; })}</> : <span>Free</span>}</div>; })}</div>)}</div></div><div className="legend"><span><i className="free-dot" /> Available</span><span><i className="booked-dot" /> Booked</span></div></section>
       <section className="content-grid"><div className="panel booking-panel"><p className="eyebrow">NEW BOOKING</p><h2>Book a meeting room</h2><p className="muted">Choose a room, time, and meeting details to reserve it.</p><BookingForm rooms={rooms} date={date} /></div><div className="panel current-bookings"><div className="panel-heading"><div><p className="eyebrow">TODAY&apos;S SCHEDULE</p><h2>Confirmed bookings</h2></div><span className="count-chip">{bookings.length} active</span></div>{bookings.length === 0 ? <p className="muted">There are no confirmed bookings for this date.</p> : <div className="booking-list">{bookings.map((booking) => <article key={booking.id}><div><strong>{booking.title}</strong><p>{rooms.find((room) => room.id === booking.room_id)?.name} · {booking.start_time.slice(0, 5)}–{booking.end_time.slice(0, 5)}</p><small>Organised by {booking.organiser}{booking.attendees ? ` · ${booking.attendees} attendees` : ""}</small></div>{(booking.user_id === membership.userId || isAdmin) && <div className="booking-actions"><EditBooking booking={booking} rooms={rooms} today={today} /><CancelBooking bookingId={booking.id} /></div>}</article>)}</div>}</div></section>
