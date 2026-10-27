@@ -52,7 +52,7 @@ export default function LoginPage() {
     const signUpUser = ("user" in result.data ? result.data.user : undefined) as { identities?: unknown[] } | null | undefined;
     if (mode === "sign-up" && !signUpUser?.identities?.length) { setMode("sign-in"); setMessage("Account already created. Please sign in."); return; }
     if (isReset) { setMessage("We sent a password reset link to your email. Open it to choose a new password."); return; }
-    setMessage(mode === "sign-up" ? "We sent a confirmation link to your email. Open it to activate your account, then sign in." : "Signed in. Loading your workspace…");
+    setMessage(mode === "sign-up" ? "We sent a confirmation link to your email. Open it to activate your account, then sign in." : "Signing you in… Opening Meeting Room Booking.");
     if (mode === "sign-in") window.location.assign("/");
   };
 
