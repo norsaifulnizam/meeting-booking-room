@@ -12,8 +12,9 @@ function formatTime(value: string) {
   return `${hour % 12 || 12}${minute ? `:${String(minute).padStart(2, "0")}` : ""} ${period}`;
 }
 
-export default async function AdminPage({ searchParams }: { searchParams: Promise<{ room?: string }> }) {
-  const { room } = await searchParams;
+export default async function AdminPage({ searchParams }: { searchParams: Promise<{ room?: string; tab?: string }> }) {
+  const { room, tab: requestedTab } = await searchParams;
+  const tab = requestedTab === "users" ? "users" : "bookings";
   const [rooms, bookings, users, membership] = await Promise.all([listRooms(), listUpcomingBookings(room), listWorkspaceUsers(), getCurrentMembership()]);
   const confirmed = bookings.filter((booking) => booking.status === "confirmed").length;
 
@@ -23,9 +24,11 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
       <nav aria-label="Primary navigation"><Link href="/">Availability</Link><Link className="active" href="/admin">Admin console</Link></nav>
     </header>
     <section className="hero">
-      <div><p className="eyebrow"><i /> ROOM BOOKING MANAGEMENT</p><h1>Manage Room Bookings</h1><p className="subtitle">View and manage all upcoming room bookings.</p></div>
-      <div className="hero-status"><span className="pulse" /> {confirmed} active</div>
+      <div><p className="eyebrow"><i /> {tab === "bookings" ? "ROOM BOOKING MANAGEMENT" : "USER MANAGEMENT"}</p><h1>{tab === "bookings" ? "Manage Room Bookings" : "Manage Users"}</h1><p className="subtitle">{tab === "bookings" ? "View and manage all upcoming room bookings." : "Manage staff access and administrator roles."}</p></div>
+      <div className="hero-status"><span className="pulse" /> {tab === "bookings" ? confirmed + " active" : users.length + " users"}</div>
     </section>
+    <div className="admin-tabs" aria-label="Admin sections"><Link className={tab === "bookings" ? "active" : ""} href="/admin">Bookings</Link><Link className={tab === "users" ? "active" : ""} href="/admin?tab=users">User Management</Link></div>
+    {tab === "bookings" && <>
     <section className="date-bar">
       <div><span>Upcoming reservations</span><strong>{bookings.length} records</strong></div>
       <form><select aria-label="Filter reservations by room" name="room" defaultValue={room ?? ""}><option value="">All rooms</option>{rooms.map((item) => <option value={item.id} key={item.id}>{item.name}</option>)}</select><button className="secondary">Filter</button></form>
@@ -44,6 +47,8 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
         </div>)}
       </div>}
     </section>
+    </>}
+    {tab === "users" && <>
     <section className="panel user-management-panel">
       <div className="panel-heading"><div><p className="eyebrow">USER MANAGEMENT</p><h2>Registered users</h2><p className="muted">Manage administrator access or remove staff who have left. Booking history stays available for audit.</p></div><span className="count-chip">{users.length} users</span></div>
       {users.length === 0 ? <p className="muted">No registered users found.</p> : <div className="user-directory">
@@ -56,6 +61,7 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
         </div>)}
       </div>}
     </section>
+    </>}
     <nav className="mobile-nav" aria-label="Mobile navigation"><Link href="/">Availability</Link><Link className="active" href="/admin">Admin</Link></nav>
   </main>;
 }
