@@ -24,8 +24,8 @@ export function EditBooking({ booking, rooms, today }: EditBookingProps) {
     <input type="hidden" name="booking_id" value={booking.id} />
     <label>Room<select name="room_id" defaultValue={booking.room_id} required>{rooms.map((room) => <option key={room.id} value={room.id}>{room.name}</option>)}</select></label>
     <div className="edit-row"><label>Date<input name="booking_date" type="date" min={today} defaultValue={booking.booking_date} required /></label><label>Start<input name="start_time" type="time" min="09:00" max="18:00" defaultValue={booking.start_time.slice(0, 5)} required /></label><label>End<input name="end_time" type="time" min="09:00" max="18:00" defaultValue={booking.end_time.slice(0, 5)} required /></label></div>
-    <label>Meeting title<input name="title" defaultValue={booking.title} required /></label>
-    <div className="edit-row"><label>Organiser<input name="organiser" defaultValue={booking.organiser} required /></label><label>Attendees<input name="attendees" defaultValue={booking.attendees} /></label></div>
+    <label>Meeting purpose<input name="title" defaultValue={booking.title} required /></label>
+    <div className="edit-row"><label>Organiser<input name="organiser" defaultValue={booking.organiser} required /></label><label>No. of attendees <input name="attendees" type="number" min="1" step="1" inputMode="numeric" defaultValue={booking.attendees} /></label></div>
     {state.error && <p className="inline-error">{state.error}</p>}
     <div className="edit-controls"><button className="primary" disabled={pending}>{pending ? "Saving…" : "Save changes"}</button><button type="button" className="secondary" disabled={pending} onClick={() => setOpen(false)}>Close</button></div>
   </form>;
