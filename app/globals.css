@@ -84,6 +84,8 @@ nav a.active { color:var(--blue); background:#fff; }
 .calendar-views { display:flex; gap:3px; padding:3px; border:1px solid #bfdbfe; border-radius:8px; background:#eff6ff; }
 .calendar-views button { min-height:34px; padding:6px 10px; border:0; border-radius:5px; background:transparent; color:#475569; font-size:.74rem; }
 .calendar-views button.active { background:#fff; color:var(--blue); box-shadow:0 1px 3px #1d4ed81f; }
+.period-navigation { display:flex; gap:6px; }
+.period-navigation .secondary { min-height:34px; padding:6px 10px; font-size:.72rem; }
 .overview-card { margin-bottom:18px; }
 .calendar-week > .availability-card:not(.overview-card),.calendar-month > .availability-card:not(.overview-card) { display:none; }
 .week-overview { display:grid; grid-template-columns:minmax(150px,1.1fr) repeat(7,minmax(96px,1fr)); gap:6px; padding:0 14px 14px; min-width:820px; }
@@ -99,7 +101,7 @@ nav a.active { color:var(--blue); background:#fff; }
 .month-day { display:grid; align-content:space-between; min-height:82px; padding:9px; border:1px solid #a7f3d0; border-radius:9px; color:#047857; background:#ecfdf5; text-decoration:none; }
 .month-day.booked { color:#be123c; border-color:#fecdd3; background:#fff1f2; }.month-day strong { font-size:.86rem; }.month-day span { font-size:.66rem; font-weight:700; }.month-day.outside-month { opacity:.42; }
 @media (max-width:760px) { .date-navigation { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:9px; }.date-navigation input { width:100%; } }
-@media (max-width:760px) { .date-navigation { grid-template-columns:minmax(0,1fr) auto; }.calendar-views { grid-column:1/-1; }.calendar-views button { flex:1; }.month-calendar { gap:4px; padding:0 10px 12px; }.month-heading { padding:5px 2px; font-size:.58rem; }.month-day { min-height:58px; padding:6px; }.month-day strong { font-size:.72rem; }.month-day span { font-size:.55rem; } }
+@media (max-width:760px) { .date-navigation { grid-template-columns:minmax(0,1fr) auto; }.calendar-views,.period-navigation { grid-column:1/-1; }.calendar-views button,.period-navigation .secondary { flex:1; }.month-calendar { gap:4px; padding:0 10px 12px; }.month-heading { padding:5px 2px; font-size:.58rem; }.month-day { min-height:58px; padding:6px; }.month-day strong { font-size:.72rem; }.month-day span { font-size:.55rem; } }
 .schedule-label strong { color:#0f172a; font-size:16px; }
 .schedule-label strong small { font-size:.75rem; font-weight:600; }
 .hero-title h1 { font-size:1.85rem; }
