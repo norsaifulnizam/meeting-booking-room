@@ -18,10 +18,10 @@ export async function getCurrentMembership(): Promise<CurrentMembership> {
   if (!user?.email) redirect("/login");
   const { data, error } = await supabase
     .from("workspace_members")
-    .select("workspace_id, role")
+    .select("workspace_id, role, is_active")
     .eq("user_id", user.id)
     .single();
-  if (error || !data) redirect("/login?error=membership");
+  if (error || !data || !data.is_active) redirect("/login?error=membership");
   return { userId: user.id, email: user.email, fullName: displayName(user.email, user.user_metadata), workspaceId: data.workspace_id, role: data.role as CurrentMembership["role"] };
 }
 

@@ -34,5 +34,6 @@ export type WorkspaceUser = {
   email: string;
   full_name: string;
   role: "owner" | "admin" | "member";
+  is_active: boolean;
   joined_at: string;
 };

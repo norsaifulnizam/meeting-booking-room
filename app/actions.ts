@@ -1,7 +1,8 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { cancelBooking, createBooking, removeWorkspaceUser, updateBooking, updateWorkspaceUserRole } from "@/lib/data/bookings";
+import { cancelBooking, createBooking, removeWorkspaceUser, restoreWorkspaceUser, updateBooking, updateWorkspaceUserRole } from "@/lib/data/bookings";
+import { createRoom, updateRoom } from "@/lib/data/rooms";
 
 export type ActionState = { error?: string; success?: string };
 
@@ -57,9 +58,20 @@ export async function removeWorkspaceUserAction(_: ActionState, formData: FormDa
   try {
     await removeWorkspaceUser(String(formData.get("user_id") ?? ""));
     revalidatePath("/admin");
-    return { success: "User access removed." };
+    return { success: "User access removed. You can restore it later if needed." };
   } catch (error) {
     return { error: error instanceof Error ? error.message : "Couldn't remove user access." };
+  }
+}
+
+export async function restoreWorkspaceUserAction(_: ActionState, formData: FormData): Promise<ActionState> {
+  try {
+    await restoreWorkspaceUser(String(formData.get("user_id") ?? ""));
+    revalidatePath("/");
+    revalidatePath("/admin");
+    return { success: "User access restored." };
+  } catch (error) {
+    return { error: error instanceof Error ? error.message : "Couldn't restore user access." };
   }
 }
 
@@ -72,5 +84,35 @@ export async function updateWorkspaceUserRoleAction(_: ActionState, formData: Fo
     return { success: "User role updated." };
   } catch (error) {
     return { error: error instanceof Error ? error.message : "Couldn't update user role." };
+  }
+}
+
+function roomInput(formData: FormData) {
+  return {
+    name: String(formData.get("name") ?? "").trim(),
+    capacity: Number(formData.get("capacity")),
+    isActive: formData.get("is_active") === "on",
+  };
+}
+
+export async function createRoomAction(_: ActionState, formData: FormData): Promise<ActionState> {
+  try {
+    await createRoom(roomInput(formData));
+    revalidatePath("/");
+    revalidatePath("/admin");
+    return { success: "Room added." };
+  } catch (error) {
+    return { error: error instanceof Error ? error.message : "Couldn't add the room." };
+  }
+}
+
+export async function updateRoomAction(_: ActionState, formData: FormData): Promise<ActionState> {
+  try {
+    await updateRoom(String(formData.get("room_id") ?? ""), roomInput(formData));
+    revalidatePath("/");
+    revalidatePath("/admin");
+    return { success: "Room settings updated." };
+  } catch (error) {
+    return { error: error instanceof Error ? error.message : "Couldn't update the room." };
   }
 }

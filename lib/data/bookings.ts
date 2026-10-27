@@ -120,6 +120,16 @@ export async function removeWorkspaceUser(userId: string) {
   if (error) throw new Error(error.message);
 }
 
+export async function restoreWorkspaceUser(userId: string) {
+  const [supabase, membership] = await Promise.all([createClient(), requireAdmin()]);
+  if (!userId) throw new Error("Choose a user to restore.");
+  const { error } = await supabase.rpc("restore_workspace_member", {
+    target_workspace: membership.workspaceId,
+    target_user: userId,
+  });
+  if (error) throw new Error(error.message);
+}
+
 export async function updateWorkspaceUserRole(userId: string, role: "admin" | "member") {
   const [supabase, membership] = await Promise.all([createClient(), requireAdmin()]);
   if (!userId) throw new Error("Choose a user to update.");
