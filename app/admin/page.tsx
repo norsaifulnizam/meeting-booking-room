@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { CancelBooking } from "@/components/cancel-booking";
 import { RemoveUserAccess } from "@/components/remove-user-access";
+import { UserRoleControl } from "@/components/user-role-control";
 import { listUpcomingBookings, listWorkspaceUsers } from "@/lib/data/bookings";
+import { getCurrentMembership } from "@/lib/data/auth";
 import { listRooms } from "@/lib/data/rooms";
 
 function formatTime(value: string) {
@@ -12,7 +14,7 @@ function formatTime(value: string) {
 
 export default async function AdminPage({ searchParams }: { searchParams: Promise<{ room?: string }> }) {
   const { room } = await searchParams;
-  const [rooms, bookings, users] = await Promise.all([listRooms(), listUpcomingBookings(room), listWorkspaceUsers()]);
+  const [rooms, bookings, users, membership] = await Promise.all([listRooms(), listUpcomingBookings(room), listWorkspaceUsers(), getCurrentMembership()]);
   const confirmed = bookings.filter((booking) => booking.status === "confirmed").length;
 
   return <main className="app-shell executive-shell">
@@ -43,14 +45,14 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
       </div>}
     </section>
     <section className="panel user-management-panel">
-      <div className="panel-heading"><div><p className="eyebrow">USER MANAGEMENT</p><h2>Registered users</h2><p className="muted">Remove access when a staff member leaves. Booking history stays available for audit.</p></div><span className="count-chip">{users.length} users</span></div>
+      <div className="panel-heading"><div><p className="eyebrow">USER MANAGEMENT</p><h2>Registered users</h2><p className="muted">Manage administrator access or remove staff who have left. Booking history stays available for audit.</p></div><span className="count-chip">{users.length} users</span></div>
       {users.length === 0 ? <p className="muted">No registered users found.</p> : <div className="user-directory">
         <div className="user-directory-head"><span>User</span><span>Office email</span><span>Role</span><span>Access</span></div>
         {users.map((user) => <div className="user-directory-row" key={user.user_id}>
           <span data-label="User"><strong>{user.full_name}</strong></span>
           <span data-label="Office email" className="booking-account">{user.email}</span>
-          <span data-label="Role" className="role-chip">{user.role}</span>
-          <span data-label="Access">{user.role === "member" ? <RemoveUserAccess userId={user.user_id} email={user.email} /> : <small className="muted">Protected administrator</small>}</span>
+          <span data-label="Role">{user.user_id === membership.userId || user.role === "owner" ? <span className="role-chip">{user.role}</span> : <UserRoleControl userId={user.user_id} role={user.role === "admin" ? "admin" : "member"} />}</span>
+          <span data-label="Access">{user.user_id === membership.userId || user.role === "owner" ? <small className="muted">Protected account</small> : <RemoveUserAccess userId={user.user_id} email={user.email} />}</span>
         </div>)}
       </div>}
     </section>

@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { cancelBooking, createBooking, removeWorkspaceUser, updateBooking } from "@/lib/data/bookings";
+import { cancelBooking, createBooking, removeWorkspaceUser, updateBooking, updateWorkspaceUserRole } from "@/lib/data/bookings";
 
 export type ActionState = { error?: string; success?: string };
 
@@ -60,5 +60,17 @@ export async function removeWorkspaceUserAction(_: ActionState, formData: FormDa
     return { success: "User access removed." };
   } catch (error) {
     return { error: error instanceof Error ? error.message : "Couldn't remove user access." };
+  }
+}
+
+export async function updateWorkspaceUserRoleAction(_: ActionState, formData: FormData): Promise<ActionState> {
+  try {
+    const role = String(formData.get("role") ?? "");
+    if (role !== "admin" && role !== "member") throw new Error("Choose either Admin or Member.");
+    await updateWorkspaceUserRole(String(formData.get("user_id") ?? ""), role);
+    revalidatePath("/admin");
+    return { success: "User role updated." };
+  } catch (error) {
+    return { error: error instanceof Error ? error.message : "Couldn't update user role." };
   }
 }

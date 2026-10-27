@@ -120,6 +120,17 @@ export async function removeWorkspaceUser(userId: string) {
   if (error) throw new Error(error.message);
 }
 
+export async function updateWorkspaceUserRole(userId: string, role: "admin" | "member") {
+  const [supabase, membership] = await Promise.all([createClient(), requireAdmin()]);
+  if (!userId) throw new Error("Choose a user to update.");
+  const { error } = await supabase.rpc("set_workspace_member_role", {
+    target_workspace: membership.workspaceId,
+    target_user: userId,
+    target_role: role,
+  });
+  if (error) throw new Error(error.message);
+}
+
 export async function createBooking(input: NewBooking): Promise<Booking> {
   if (!input.room_id || !input.booking_date || !input.start_time || !input.end_time || !input.title.trim() || !input.organiser.trim()) {
     throw new Error("Please complete the room, time, meeting title, and organiser fields.");
