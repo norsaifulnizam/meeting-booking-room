@@ -19,7 +19,7 @@ export async function createBookingAction(_: ActionState, formData: FormData): P
     });
     revalidatePath("/");
     revalidatePath("/admin");
-    return { success: "Booking confirmed. The availability grid has been updated." };
+    return { success: "Booking confirmed. Room availability has been updated." };
   } catch (error) {
     return { error: error instanceof Error ? error.message : "Couldn't create the booking." };
   }
