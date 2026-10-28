@@ -182,3 +182,10 @@ nav a.active { color:var(--blue); background:#fff; }
   .booking-list small { font-size:.8rem; }
   .legend { font-size:.8rem; }
 }
+
+.booking-type { display:flex; align-items:center; gap:16px; margin:0; padding:10px 12px; border:1px solid #dbe4f0; border-radius:9px; background:#fbfdff; }
+.booking-type legend { padding:0 4px; color:#334155; font-size:.76rem; font-weight:700; }
+.booking-type label { display:flex; align-items:center; gap:6px; font-size:.78rem; }
+.booking-type input { width:15px; min-height:auto; height:15px; margin:0; }
+.range-note { margin:-4px 0 0; color:var(--muted); font-size:.78rem; line-height:1.4; }
+@media (max-width:480px) { .booking-type { flex-wrap:wrap; gap:8px 12px; }.booking-type legend { width:100%; }.range-note { font-size:.7rem; } }

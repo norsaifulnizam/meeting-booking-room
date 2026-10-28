@@ -8,9 +8,10 @@ export type ActionState = { error?: string; success?: string };
 
 export async function createBookingAction(_: ActionState, formData: FormData): Promise<ActionState> {
   try {
-    await createBooking({
+    const bookings = await createBooking({
       room_id: String(formData.get("room_id") ?? ""),
       booking_date: String(formData.get("booking_date") ?? ""),
+      end_date: String(formData.get("end_date") ?? "").trim() || undefined,
       start_time: String(formData.get("start_time") ?? ""),
       end_time: String(formData.get("end_time") ?? ""),
       title: String(formData.get("title") ?? "").trim(),
@@ -19,7 +20,7 @@ export async function createBookingAction(_: ActionState, formData: FormData): P
     });
     revalidatePath("/");
     revalidatePath("/admin");
-    return { success: "Booking confirmed. Room availability has been updated." };
+    return { success: bookings.length === 1 ? "Booking confirmed. Room availability has been updated." : `${bookings.length} weekday bookings confirmed. Room availability has been updated.` };
   } catch (error) {
     return { error: error instanceof Error ? error.message : "Couldn't create the booking." };
   }

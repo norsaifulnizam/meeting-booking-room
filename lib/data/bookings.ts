@@ -8,6 +8,7 @@ export type BookingSlot = Pick<Booking, "room_id" | "start_time" | "end_time" | 
 export type NewBooking = {
   room_id: string;
   booking_date: string;
+  end_date?: string;
   start_time: string;
   end_time: string;
   title: string;
@@ -31,6 +32,18 @@ function malaysiaBookingLimit() {
   const limit = new Date(`${today}T00:00:00Z`);
   limit.setUTCFullYear(limit.getUTCFullYear() + 1);
   return limit.toISOString().slice(0, 10);
+}
+
+function bookingDates(startDate: string, endDate: string) {
+  const dates: string[] = [];
+  const cursor = new Date(`${startDate}T00:00:00Z`);
+  const end = new Date(`${endDate}T00:00:00Z`);
+  while (cursor <= end) {
+    const weekday = cursor.getUTCDay();
+    if (weekday !== 0 && weekday !== 6) dates.push(cursor.toISOString().slice(0, 10));
+    cursor.setUTCDate(cursor.getUTCDate() + 1);
+  }
+  return dates;
 }
 
 export async function listBookingsForDate(date: string): Promise<Booking[]> {
@@ -148,15 +161,17 @@ export async function updateWorkspaceUserRole(userId: string, role: "admin" | "m
   if (error) throw new Error(error.message);
 }
 
-export async function createBooking(input: NewBooking): Promise<Booking> {
+export async function createBooking(input: NewBooking): Promise<Booking[]> {
   if (!input.room_id || !input.booking_date || !input.start_time || !input.end_time || !input.title.trim() || !input.organiser.trim()) {
     throw new Error("Please complete the room, time, meeting title, and organiser fields.");
   }
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(input.booking_date) || Number.isNaN(Date.parse(`${input.booking_date}T00:00:00Z`))) {
+  const endDate = input.end_date || input.booking_date;
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(input.booking_date) || !/^\d{4}-\d{2}-\d{2}$/.test(endDate) || Number.isNaN(Date.parse(`${input.booking_date}T00:00:00Z`)) || Number.isNaN(Date.parse(`${endDate}T00:00:00Z`))) {
     throw new Error("Please choose a valid booking date.");
   }
+  if (endDate < input.booking_date) throw new Error("End date must be on or after the start date.");
   if (input.booking_date < malaysiaToday()) throw new Error("Bookings must be for today or a future date.");
-  if (input.booking_date > malaysiaBookingLimit()) throw new Error("Bookings can be made up to one year in advance.");
+  if (endDate > malaysiaBookingLimit()) throw new Error("Bookings can be made up to one year in advance.");
   if (input.end_time <= input.start_time) throw new Error("End time must be after start time.");
   if (input.start_time < "09:00" || input.end_time > "18:00") throw new Error("Bookings are available from 9:00 AM to 6:00 PM.");
   if (input.attendees && (!/^\d+$/.test(input.attendees) || Number(input.attendees) < 1)) throw new Error("Number of attendees must be a whole number.");
@@ -170,25 +185,29 @@ export async function createBooking(input: NewBooking): Promise<Booking> {
     .maybeSingle();
   if (roomError) throw new Error(roomError.message);
   if (!room) throw new Error("That room is not available to this team.");
+  const dates = bookingDates(input.booking_date, endDate);
+  if (!dates.length) throw new Error("The selected date range contains only weekends. Choose at least one weekday.");
   const { data: conflicts, error: lookupError } = await supabase
     .from("bookings")
-    .select("id")
+    .select("booking_date")
     .eq("workspace_id", membership.workspaceId)
     .eq("room_id", input.room_id)
-    .eq("booking_date", input.booking_date)
+    .gte("booking_date", input.booking_date)
+    .lte("booking_date", endDate)
     .eq("status", "confirmed")
     .lt("start_time", input.end_time)
     .gt("end_time", input.start_time)
     .limit(1);
   if (lookupError) throw new Error(lookupError.message);
-  if (conflicts?.length) throw new Error("Room already booked for this time.");
+  if (conflicts?.length) throw new Error(`Room already booked for this time on ${conflicts[0].booking_date}.`);
 
-  const { data, error } = await supabase.from("bookings").insert({ ...input, user_id: membership.userId, workspace_id: membership.workspaceId, status: "confirmed" }).select().single();
+  const { end_date: _endDate, ...booking } = input;
+  const { data, error } = await supabase.from("bookings").insert(dates.map((booking_date) => ({ ...booking, booking_date, user_id: membership.userId, workspace_id: membership.workspaceId, status: "confirmed" }))).select();
   if (error) {
-    if (error.code === "23505" || error.code === "23P01") throw new Error("Room already booked for this time.");
+    if (error.code === "23505" || error.code === "23P01") throw new Error("Room already booked for one or more selected dates and times.");
     throw new Error(error.message);
   }
-  return data as Booking;
+  return (data ?? []) as Booking[];
 }
 
 export async function updateBooking(id: string, input: NewBooking): Promise<Booking> {
