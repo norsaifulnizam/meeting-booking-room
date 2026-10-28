@@ -169,3 +169,16 @@ nav a.active { color:var(--blue); background:#fff; }
 @media (prefers-reduced-motion:reduce) {
   .hero-status .pulse { animation:none; }
 }
+
+/* Improve everyday readability on office-sized displays without crowding the timeline. */
+@media (min-width:761px) {
+  .booking-form label { font-size:.84rem; }
+  .booking-form input,.booking-form select { font-size:.875rem; }
+  .room-cell strong { font-size:.9rem; }
+  .room-cell span { font-size:.78rem; }
+  .slot { font-size:.75rem; }
+  .booking-list article { font-size:.9rem; }
+  .booking-list p { font-size:.85rem; }
+  .booking-list small { font-size:.8rem; }
+  .legend { font-size:.8rem; }
+}
