@@ -26,6 +26,13 @@ function malaysiaToday() {
   return `${part("year")}-${part("month")}-${part("day")}`;
 }
 
+function malaysiaBookingLimit() {
+  const today = malaysiaToday();
+  const limit = new Date(`${today}T00:00:00Z`);
+  limit.setUTCFullYear(limit.getUTCFullYear() + 1);
+  return limit.toISOString().slice(0, 10);
+}
+
 export async function listBookingsForDate(date: string): Promise<Booking[]> {
   const [supabase, workspace] = await Promise.all([createClient(), getCurrentWorkspace()]);
   const { data, error } = await supabase
@@ -149,6 +156,7 @@ export async function createBooking(input: NewBooking): Promise<Booking> {
     throw new Error("Please choose a valid booking date.");
   }
   if (input.booking_date < malaysiaToday()) throw new Error("Bookings must be for today or a future date.");
+  if (input.booking_date > malaysiaBookingLimit()) throw new Error("Bookings can be made up to one year in advance.");
   if (input.end_time <= input.start_time) throw new Error("End time must be after start time.");
   if (input.start_time < "09:00" || input.end_time > "18:00") throw new Error("Bookings are available from 9:00 AM to 6:00 PM.");
   if (input.attendees && (!/^\d+$/.test(input.attendees) || Number(input.attendees) < 1)) throw new Error("Number of attendees must be a whole number.");
@@ -191,6 +199,7 @@ export async function updateBooking(id: string, input: NewBooking): Promise<Book
     throw new Error("Please choose a valid booking date.");
   }
   if (input.booking_date < malaysiaToday()) throw new Error("Bookings must be for today or a future date.");
+  if (input.booking_date > malaysiaBookingLimit()) throw new Error("Bookings can be made up to one year in advance.");
   if (input.end_time <= input.start_time) throw new Error("End time must be after start time.");
   if (input.start_time < "09:00" || input.end_time > "18:00") throw new Error("Bookings are available from 9:00 AM to 6:00 PM.");
   if (input.attendees && (!/^\d+$/.test(input.attendees) || Number(input.attendees) < 1)) throw new Error("Number of attendees must be a whole number.");
