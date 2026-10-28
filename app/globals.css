@@ -12,7 +12,7 @@
 /* Stitch reference visual system: mobile-first executive operations desk. */
 :root { --blue:#1d4ed8; --blue-soft:#eff6ff; --blue-line:#bfdbfe; --canvas:#f7f9ff; --rose-accent:#e11d48; --violet:#7c3aed; }
 body { background:var(--canvas); }
-.app-shell { max-width:1180px; padding-top:18px; }
+.app-shell { max-width:1360px; padding-top:18px; }
 .app-header { border-bottom-color:#dbeafe; }
 .brand-block .eyebrow { color:#be123c; font-size:.66rem; }
 .brand-block .eyebrow i { background:var(--rose-accent); width:6px; height:6px; }
