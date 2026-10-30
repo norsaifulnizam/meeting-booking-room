@@ -1,6 +1,12 @@
 import { NextResponse } from "next/server";
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 
+function sessionCookieOptions(options: CookieOptions) {
+  if (options.maxAge === 0) return options;
+  const { maxAge: _maxAge, expires: _expires, ...sessionOptions } = options;
+  return sessionOptions;
+}
+
 export async function GET(request: Request) {
   const url = new URL(request.url);
   const code = url.searchParams.get("code");
@@ -18,7 +24,7 @@ export async function GET(request: Request) {
           return { name, value: parts.join("=") };
         }) ?? [],
         setAll: (cookiesToSet: { name: string; value: string; options: CookieOptions }[]) => {
-          cookiesToSet.forEach(({ name, value, options }) => response.cookies.set(name, value, options));
+          cookiesToSet.forEach(({ name, value, options }) => response.cookies.set(name, value, sessionCookieOptions(options)));
         },
       },
     },

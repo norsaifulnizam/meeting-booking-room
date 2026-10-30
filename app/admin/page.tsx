@@ -4,6 +4,7 @@ import { RemoveUserAccess } from "@/components/remove-user-access";
 import { RestoreUserAccess } from "@/components/restore-user-access";
 import { RoomSettings } from "@/components/room-settings";
 import { UserRoleControl } from "@/components/user-role-control";
+import { SessionGuard } from "@/components/session-guard";
 import { listUpcomingBookings, listWorkspaceUsers } from "@/lib/data/bookings";
 import { getCurrentMembership } from "@/lib/data/auth";
 import { listAdminRooms, listRooms } from "@/lib/data/rooms";
@@ -20,7 +21,7 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
   const [rooms, adminRooms, bookings, users, membership] = await Promise.all([listRooms(), listAdminRooms(), listUpcomingBookings(room), listWorkspaceUsers(), getCurrentMembership()]);
   const confirmed = bookings.filter((booking) => booking.status === "confirmed").length;
 
-  return <main className="app-shell executive-shell">
+  return <main className="app-shell executive-shell"><SessionGuard />
     <header className="app-header">
       <div className="brand-block"><p className="eyebrow"><i /> MEETING ROOMS</p><p className="location">Selangor Properties · Booking Administration</p></div>
       <nav aria-label="Primary navigation"><Link href="/">Availability</Link><Link className="active" href="/admin">Admin console</Link></nav>

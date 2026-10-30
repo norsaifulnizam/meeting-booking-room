@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { isValidPassword, PasswordRequirements } from "@/components/password-requirements";
 
@@ -30,6 +30,12 @@ export default function LoginPage() {
   const [pending, setPending] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const isReset = mode === "reset";
+
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get("reason") === "timeout") {
+      setMessage("You were signed out after 30 minutes of inactivity. Please sign in again.");
+    }
+  }, []);
 
   const switchMode = (nextMode: Mode) => { setMode(nextMode); setMessage(""); setPassword(""); };
   const submit = async (event: FormEvent<HTMLFormElement>) => {

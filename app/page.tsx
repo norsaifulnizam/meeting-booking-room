@@ -6,6 +6,7 @@ import { CancelBooking } from "@/components/cancel-booking";
 import { DateNavigation } from "@/components/date-navigation";
 import { EditBooking } from "@/components/edit-booking";
 import { LogoutButton } from "@/components/logout-button";
+import { SessionGuard } from "@/components/session-guard";
 import { listAvailabilitySlots, listTeamBookingsForDate, listTeamBookingsForRange } from "@/lib/data/bookings";
 import { getCurrentMembership } from "@/lib/data/auth";
 import { listRooms } from "@/lib/data/rooms";
@@ -78,7 +79,7 @@ export default async function AvailabilityPage({ searchParams }: { searchParams:
     return { background: `linear-gradient(90deg, ${stops.join(", ")})` };
   };
 
-  return <main className={"app-shell executive-shell calendar-" + view}>
+  return <main className={"app-shell executive-shell calendar-" + view}><SessionGuard />
     <header className="app-header"><div className="brand-block"><p className="eyebrow"><i /> Hi {membership.fullName}</p><p className="location">Selangor Properties · {membership.email}</p></div><div className="header-actions"><nav aria-label="Primary navigation"><Link className="active" href="/">Availability</Link>{isAdmin && <Link href="/admin">Admin console</Link>}</nav><LogoutButton /></div></header>
     <section className="hero availability-hero"><div className="hero-title"><Image src="/spsb-logo-white-red.png" width={68} height={53} alt="Selangor Properties logo" priority /><h1>Meeting Room Booking</h1></div><div className="hero-status"><span className="pulse" /> Live</div></section>
     <section className="date-bar"><div><strong>{formatDate(date)}</strong></div><DateNavigation date={date} today={today} view={view} /></section>

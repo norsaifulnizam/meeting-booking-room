@@ -1,6 +1,12 @@
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
+function sessionCookieOptions(options: CookieOptions) {
+  if (options.maxAge === 0) return options;
+  const { maxAge: _maxAge, expires: _expires, ...sessionOptions } = options;
+  return sessionOptions;
+}
+
 export async function updateSession(request: NextRequest) {
   const supabaseResponse = NextResponse.next({ request });
 
@@ -28,7 +34,7 @@ export async function updateSession(request: NextRequest) {
           );
           response = NextResponse.next({ request });
           cookiesToSet.forEach(({ name, value, options }) =>
-            response.cookies.set(name, value, options),
+            response.cookies.set(name, value, sessionCookieOptions(options)),
           );
         },
       },
