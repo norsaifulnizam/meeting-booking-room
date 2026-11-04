@@ -5,7 +5,7 @@ import { RestoreUserAccess } from "@/components/restore-user-access";
 import { RoomSettings } from "@/components/room-settings";
 import { UserRoleControl } from "@/components/user-role-control";
 import { SessionGuard } from "@/components/session-guard";
-import { listUpcomingBookings, listWorkspaceUsers } from "@/lib/data/bookings";
+import { listBookingAuditEvents, listUpcomingBookings, listWorkspaceUsers } from "@/lib/data/bookings";
 import { getCurrentMembership } from "@/lib/data/auth";
 import { listAdminRooms, listRooms } from "@/lib/data/rooms";
 
@@ -15,10 +15,15 @@ function formatTime(value: string) {
   return `${hour % 12 || 12}${minute ? `:${String(minute).padStart(2, "0")}` : ""} ${period}`;
 }
 
+function formatAuditDate(value: string) {
+  return new Intl.DateTimeFormat("en-MY", { day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit", hour12: true }).format(new Date(value));
+}
+
 export default async function AdminPage({ searchParams }: { searchParams: Promise<{ room?: string; tab?: string }> }) {
   const { room, tab: requestedTab } = await searchParams;
-  const tab = requestedTab === "users" || requestedTab === "rooms" ? requestedTab : "bookings";
+  const tab = requestedTab === "users" || requestedTab === "rooms" || requestedTab === "audit" ? requestedTab : "bookings";
   const [rooms, adminRooms, bookings, users, membership] = await Promise.all([listRooms(), listAdminRooms(), listUpcomingBookings(room), listWorkspaceUsers(), getCurrentMembership()]);
+  const auditEvents = tab === "audit" ? await listBookingAuditEvents() : [];
   const confirmed = bookings.filter((booking) => booking.status === "confirmed").length;
 
   return <main className="app-shell executive-shell"><SessionGuard />
@@ -27,10 +32,10 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
       <nav aria-label="Primary navigation"><Link href="/">Availability</Link><Link className="active" href="/admin">Admin console</Link></nav>
     </header>
     <section className="hero">
-      <div><p className="eyebrow"><i /> {tab === "bookings" ? "ROOM BOOKING MANAGEMENT" : tab === "users" ? "USER MANAGEMENT" : "ROOM SETTINGS"}</p><h1>{tab === "bookings" ? "Manage Room Bookings" : tab === "users" ? "Manage Users" : "Manage Rooms"}</h1><p className="subtitle">{tab === "bookings" ? "View and manage all upcoming room bookings." : tab === "users" ? "Manage staff access and administrator roles." : "Add rooms and control which spaces are available for booking."}</p></div>
-      <div className="hero-status"><span className="pulse" /> {tab === "bookings" ? confirmed + " active" : tab === "users" ? users.filter((user) => user.is_active).length + " active users" : adminRooms.filter((room) => room.is_active).length + " available rooms"}</div>
+      <div><p className="eyebrow"><i /> {tab === "bookings" ? "ROOM BOOKING MANAGEMENT" : tab === "users" ? "USER MANAGEMENT" : tab === "rooms" ? "ROOM SETTINGS" : "BOOKING ACTIVITY"}</p><h1>{tab === "bookings" ? "Manage Room Bookings" : tab === "users" ? "Manage Users" : tab === "rooms" ? "Manage Rooms" : "Booking activity"}</h1><p className="subtitle">{tab === "bookings" ? "View and manage all upcoming room bookings." : tab === "users" ? "Manage staff access and administrator roles." : tab === "rooms" ? "Add rooms and control which spaces are available for booking." : "Review booking actions, including who made each change and when."}</p></div>
+      <div className="hero-status"><span className="pulse" /> {tab === "bookings" ? confirmed + " active" : tab === "users" ? users.filter((user) => user.is_active).length + " active users" : tab === "rooms" ? adminRooms.filter((room) => room.is_active).length + " available rooms" : auditEvents.length + " recent events"}</div>
     </section>
-    <div className="admin-tabs" aria-label="Admin sections"><Link className={tab === "bookings" ? "active" : ""} href="/admin">Bookings</Link><Link className={tab === "users" ? "active" : ""} href="/admin?tab=users">User Management</Link><Link className={tab === "rooms" ? "active" : ""} href="/admin?tab=rooms">Room Settings</Link></div>
+    <div className="admin-tabs" aria-label="Admin sections"><Link className={tab === "bookings" ? "active" : ""} href="/admin">Bookings</Link><Link className={tab === "users" ? "active" : ""} href="/admin?tab=users">User Management</Link><Link className={tab === "rooms" ? "active" : ""} href="/admin?tab=rooms">Room Settings</Link><Link className={tab === "audit" ? "active" : ""} href="/admin?tab=audit">Activity</Link></div>
     {tab === "bookings" && <>
     <section className="date-bar">
       <div><span>Upcoming reservations</span><strong>{bookings.length} records</strong></div>
@@ -68,6 +73,10 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
     {tab === "rooms" && <section className="panel room-management-panel">
       <div className="panel-heading"><div><p className="eyebrow">ROOM SETTINGS</p><h2>Rooms</h2><p className="muted">Turn off a room when it is unavailable. Existing booking history is kept, while inactive rooms cannot be selected for new bookings.</p></div><span className="count-chip">{adminRooms.length} rooms</span></div>
       <RoomSettings rooms={adminRooms} />
+    </section>}
+    {tab === "audit" && <section className="panel audit-panel">
+      <div className="panel-heading"><div><p className="eyebrow">AUDIT HISTORY</p><h2>Recent booking activity</h2><p className="muted">Actions are retained for review. New activity is recorded from today onward.</p></div><span className="count-chip">{auditEvents.length} events</span></div>
+      {auditEvents.length === 0 ? <p className="muted">No booking activity has been recorded yet.</p> : <div className="audit-list">{auditEvents.map((event) => <article key={event.id}><span className={`audit-action ${event.action}`}>{event.action}</span><div><strong>{event.title}</strong><p>{event.room_id ? rooms.find((room) => room.id === event.room_id)?.name ?? "Unknown room" : "Unknown room"}{event.booking_date ? ` · ${event.booking_date}` : ""}{event.start_time && event.end_time ? ` · ${formatTime(event.start_time)}–${formatTime(event.end_time)}` : ""}</p><small>Organiser: {event.organiser}{event.cancellation_reason ? ` · Reason: ${event.cancellation_reason}` : ""}</small></div><div className="audit-meta"><strong>{event.actor_email}</strong><small>{formatAuditDate(event.occurred_at)}</small></div></article>)}</div>}
     </section>}
     <nav className="mobile-nav" aria-label="Mobile navigation"><Link href="/">Availability</Link><Link className="active" href="/admin">Admin</Link></nav>
     <footer className="app-footer">© 2026 Selangor Properties Sdn. Bhd. · Developed by IT Department</footer>

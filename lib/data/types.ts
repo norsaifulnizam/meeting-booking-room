@@ -37,3 +37,18 @@ export type WorkspaceUser = {
   is_active: boolean;
   joined_at: string;
 };
+
+export type BookingAuditEvent = {
+  id: string;
+  booking_id: string | null;
+  action: "created" | "updated" | "cancelled";
+  actor_email: string;
+  occurred_at: string;
+  room_id: string | null;
+  booking_date: string | null;
+  start_time: string | null;
+  end_time: string | null;
+  title: string;
+  organiser: string;
+  cancellation_reason: string | null;
+};

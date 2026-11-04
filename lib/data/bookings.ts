@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
-import type { AdminBooking, Booking, WorkspaceUser } from "./types";
+import type { AdminBooking, Booking, BookingAuditEvent, WorkspaceUser } from "./types";
 import { getCurrentMembership, requireAdmin } from "./auth";
 import { getCurrentWorkspace } from "./workspaces";
 
@@ -128,6 +128,16 @@ export async function listWorkspaceUsers(): Promise<WorkspaceUser[]> {
   const { data, error } = await supabase.rpc("workspace_user_directory", { target_workspace: membership.workspaceId });
   if (error) throw new Error(error.message);
   return (data ?? []) as WorkspaceUser[];
+}
+
+export async function listBookingAuditEvents(): Promise<BookingAuditEvent[]> {
+  const [supabase, membership] = await Promise.all([createClient(), requireAdmin()]);
+  const { data, error } = await supabase.rpc("admin_booking_audit_events", {
+    target_workspace: membership.workspaceId,
+    event_limit: 100,
+  });
+  if (error) throw new Error(error.message);
+  return (data ?? []) as BookingAuditEvent[];
 }
 
 export async function removeWorkspaceUser(userId: string) {
