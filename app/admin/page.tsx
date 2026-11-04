@@ -70,5 +70,6 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
       <RoomSettings rooms={adminRooms} />
     </section>}
     <nav className="mobile-nav" aria-label="Mobile navigation"><Link href="/">Availability</Link><Link className="active" href="/admin">Admin</Link></nav>
+    <footer className="app-footer">© 2026 Selangor Properties Sdn. Bhd. · Developed by IT Department</footer>
   </main>;
 }

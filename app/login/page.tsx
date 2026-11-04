@@ -82,6 +82,7 @@ export default function LoginPage() {
       {mode === "sign-up" && <button className="text-button" onClick={() => switchMode("sign-in")}>Already have an account? Sign in</button>}
       {isReset && <button className="text-button" onClick={() => switchMode("sign-in")}>Back to sign in</button>}
       <p>Need help? Contact IT Support</p>
+      <p className="copyright-notice">© 2026 Selangor Properties Sdn. Bhd. · Developed by IT Department</p>
     </div>
   </section></main>;
 }
