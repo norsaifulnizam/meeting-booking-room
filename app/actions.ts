@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { cancelBooking, createBooking, removeWorkspaceUser, restoreWorkspaceUser, setWorkspaceUserPassword, updateBooking, updateWorkspaceUserRole } from "@/lib/data/bookings";
+import { cancelBooking, createBooking, createWorkspaceUser, removeWorkspaceUser, restoreWorkspaceUser, setWorkspaceUserPassword, updateBooking, updateWorkspaceUserRole } from "@/lib/data/bookings";
 import { createRoom, updateRoom } from "@/lib/data/rooms";
 
 export type ActionState = { error?: string; success?: string };
@@ -97,6 +97,23 @@ export async function setWorkspaceUserPasswordAction(_: ActionState, formData: F
     return { success: "Password updated. Give the new password to the user securely." };
   } catch (error) {
     return { error: error instanceof Error ? error.message : "Couldn't update the password." };
+  }
+}
+
+export async function createWorkspaceUserAction(_: ActionState, formData: FormData): Promise<ActionState> {
+  try {
+    const password = String(formData.get("password") ?? "");
+    if (password !== String(formData.get("confirmation") ?? "")) throw new Error("The passwords do not match.");
+    await createWorkspaceUser({
+      firstName: String(formData.get("first_name") ?? ""),
+      lastName: String(formData.get("last_name") ?? ""),
+      email: String(formData.get("email") ?? ""),
+      password,
+    });
+    revalidatePath("/admin");
+    return { success: "Staff account created. Give the sign-in details to the user securely." };
+  } catch (error) {
+    return { error: error instanceof Error ? error.message : "Couldn't create the staff account." };
   }
 }
 

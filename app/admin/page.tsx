@@ -5,6 +5,7 @@ import { RestoreUserAccess } from "@/components/restore-user-access";
 import { RoomSettings } from "@/components/room-settings";
 import { UserRoleControl } from "@/components/user-role-control";
 import { SetUserPassword } from "@/components/set-user-password";
+import { CreateWorkspaceUser } from "@/components/create-workspace-user";
 import { SessionGuard } from "@/components/session-guard";
 import { listBookingAuditEvents, listUpcomingBookings, listWorkspaceUsers } from "@/lib/data/bookings";
 import { getCurrentMembership } from "@/lib/data/auth";
@@ -59,7 +60,8 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
     </>}
     {tab === "users" && <>
     <section className="panel user-management-panel">
-      <div className="panel-heading"><div><p className="eyebrow">USER MANAGEMENT</p><h2>Registered users</h2><p className="muted">Deactivate staff who have left, restore access when needed, and manage administrator roles. Booking history stays available for audit.</p></div><span className="count-chip">{users.filter((user) => user.is_active).length} active</span></div>
+      <div className="panel-heading"><div><p className="eyebrow">USER MANAGEMENT</p><h2>Registered users</h2><p className="muted">Create staff accounts, deactivate staff who have left, restore access when needed, and manage administrator roles. Booking history stays available for audit.</p></div><span className="count-chip">{users.filter((user) => user.is_active).length} active</span></div>
+      <CreateWorkspaceUser />
       {users.length === 0 ? <p className="muted">No registered users found.</p> : <div className="user-directory">
         <div className="user-directory-head"><span>User</span><span>Office email</span><span>Role</span><span>Access</span></div>
         {users.map((user) => <div className="user-directory-row" key={user.user_id}>

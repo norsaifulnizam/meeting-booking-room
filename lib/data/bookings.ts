@@ -189,6 +189,41 @@ export async function setWorkspaceUserPassword(userId: string, password: string)
   if (error) throw new Error(error.message);
 }
 
+const approvedCompanyDomains = new Set([
+  "menaramilenium.com.my",
+  "selangorproperties.com.my",
+  "spbpm.com.my",
+  "thefive.com.my",
+]);
+
+export async function createWorkspaceUser(input: { firstName: string; lastName: string; email: string; password: string }) {
+  await requireAdmin();
+  const firstName = input.firstName.trim();
+  const lastName = input.lastName.trim();
+  const email = input.email.trim().toLowerCase();
+  const domain = email.split("@")[1];
+  if (!firstName || !lastName) throw new Error("Enter the staff member's first and last name.");
+  if (!email || !domain || !approvedCompanyDomains.has(domain)) throw new Error("This user is not found in our system.");
+  if (input.password.length < 8 || input.password.length > 12 || !/[A-Z]/.test(input.password) || !/[a-z]/.test(input.password) || !/\d/.test(input.password)) {
+    throw new Error("The password must be 8 to 12 characters and include uppercase, lowercase, and a number.");
+  }
+
+  const { error } = await createAdminClient().auth.admin.createUser({
+    email,
+    password: input.password,
+    email_confirm: true,
+    user_metadata: {
+      first_name: firstName,
+      last_name: lastName,
+      full_name: `${firstName} ${lastName}`,
+    },
+  });
+  if (error) {
+    if (error.message.toLowerCase().includes("already")) throw new Error("Account already created. Please sign in.");
+    throw new Error(error.message);
+  }
+}
+
 export async function createBooking(input: NewBooking): Promise<Booking[]> {
   if (!input.room_id || !input.booking_date || !input.start_time || !input.end_time || !input.title.trim() || !input.organiser.trim()) {
     throw new Error("Please complete the room, time, meeting title, and organiser fields.");
