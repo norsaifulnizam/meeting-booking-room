@@ -130,6 +130,10 @@ nav a.active { color:var(--blue); background:#fff; }
 .create-user-heading h3 { margin:4px 0; font-size:1.05rem; }
 .create-user-form label { display:grid; gap:6px; color:#475569; font-size:.72rem; font-weight:700; }
 .create-user-form input { min-height:38px; padding:8px 10px; border:1px solid #dbe4f0; border-radius:8px; background:#fff; font-size:.82rem; }
+.password-input { position:relative; display:block; }
+.password-input input { width:100%; padding-right:54px !important; }
+.password-input button { position:absolute; top:50%; right:5px; min-height:28px; padding:3px 7px; transform:translateY(-50%); border:0; background:transparent; color:#475569; font-size:.72rem; font-weight:700; }
+.password-input button:hover { color:#be123c; }
 .create-user-form .password-requirements { margin:0; }
 .create-user-actions { display:flex; gap:8px; align-items:center; }
 .create-user-actions .secondary { min-height:38px; padding-inline:14px; font-size:.78rem; }

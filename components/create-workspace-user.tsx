@@ -10,6 +10,8 @@ const initialState: ActionState = {};
 export function CreateWorkspaceUser() {
   const [open, setOpen] = useState(false);
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmation, setShowConfirmation] = useState(false);
   const [notice, setNotice] = useState("");
   const [state, action, pending] = useActionState(createWorkspaceUserAction, initialState);
   const router = useRouter();
@@ -29,7 +31,7 @@ export function CreateWorkspaceUser() {
     <div className="create-user-heading"><div><p className="eyebrow">NEW STAFF ACCOUNT</p><h3>Create staff account</h3><p className="muted">The user can sign in immediately. No confirmation email is sent.</p></div></div>
     <div className="field-row"><label>First name<input name="first_name" autoComplete="given-name" required /></label><label>Last name<input name="last_name" autoComplete="family-name" required /></label></div>
     <label>Office email<input name="email" type="email" autoComplete="email" placeholder="name@company.com" required /></label>
-    <div className="field-row"><label>Password<input name="password" type="password" autoComplete="new-password" minLength={8} maxLength={12} value={password} onChange={(event) => setPassword(event.target.value)} required /></label><label>Confirm password<input name="confirmation" type="password" autoComplete="new-password" minLength={8} maxLength={12} required /></label></div>
+    <div className="field-row"><label>Password<span className="password-input"><input name="password" type={showPassword ? "text" : "password"} autoComplete="new-password" minLength={8} maxLength={12} value={password} onChange={(event) => setPassword(event.target.value)} required /><button type="button" onClick={() => setShowPassword((shown) => !shown)}>{showPassword ? "Hide" : "Show"}</button></span></label><label>Confirm password<span className="password-input"><input name="confirmation" type={showConfirmation ? "text" : "password"} autoComplete="new-password" minLength={8} maxLength={12} required /><button type="button" onClick={() => setShowConfirmation((shown) => !shown)}>{showConfirmation ? "Hide" : "Show"}</button></span></label></div>
     <PasswordRequirements password={password} />
     <div className="create-user-actions"><button className="primary" disabled={pending}>{pending ? "Creating…" : "Create account"}</button><button type="button" className="secondary" onClick={() => setOpen(false)}>Cancel</button></div>
     {state.error && <span className="inline-error">{state.error}</span>}

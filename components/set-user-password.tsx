@@ -11,6 +11,8 @@ export function SetUserPassword({ userId, email }: { userId: string; email: stri
   const [open, setOpen] = useState(false);
   const [password, setPassword] = useState("");
   const [confirmation, setConfirmation] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmation, setShowConfirmation] = useState(false);
   const [notice, setNotice] = useState("");
   const [state, action, pending] = useActionState(setWorkspaceUserPasswordAction, initialState);
   const router = useRouter();
@@ -31,9 +33,9 @@ export function SetUserPassword({ userId, email }: { userId: string; email: stri
     if (!window.confirm(`Set a new password for ${email}? Their current password will stop working immediately.`)) event.preventDefault();
   }}>
     <input type="hidden" name="user_id" value={userId} />
-    <label>New password<input name="password" type="password" autoComplete="new-password" minLength={8} maxLength={12} value={password} onChange={(event) => setPassword(event.target.value)} required /></label>
+    <label>New password<span className="password-input"><input name="password" type={showPassword ? "text" : "password"} autoComplete="new-password" minLength={8} maxLength={12} value={password} onChange={(event) => setPassword(event.target.value)} required /><button type="button" onClick={() => setShowPassword((shown) => !shown)}>{showPassword ? "Hide" : "Show"}</button></span></label>
     <PasswordRequirements password={password} />
-    <label>Confirm password<input name="confirmation" type="password" autoComplete="new-password" minLength={8} maxLength={12} value={confirmation} onChange={(event) => setConfirmation(event.target.value)} required /></label>
+    <label>Confirm password<span className="password-input"><input name="confirmation" type={showConfirmation ? "text" : "password"} autoComplete="new-password" minLength={8} maxLength={12} value={confirmation} onChange={(event) => setConfirmation(event.target.value)} required /><button type="button" onClick={() => setShowConfirmation((shown) => !shown)}>{showConfirmation ? "Hide" : "Show"}</button></span></label>
     <div className="password-admin-actions"><button className="secondary" disabled={pending}>{pending ? "Saving…" : "Save password"}</button><button type="button" className="text-button" onClick={() => setOpen(false)}>Cancel</button></div>
     {state.success && <span className="inline-success">{state.success}</span>}
     {state.error && <span className="inline-error">{state.error}</span>}
