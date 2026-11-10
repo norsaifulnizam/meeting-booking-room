@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { cancelBooking, createBooking, removeWorkspaceUser, restoreWorkspaceUser, updateBooking, updateWorkspaceUserRole } from "@/lib/data/bookings";
+import { cancelBooking, createBooking, removeWorkspaceUser, restoreWorkspaceUser, setWorkspaceUserPassword, updateBooking, updateWorkspaceUserRole } from "@/lib/data/bookings";
 import { createRoom, updateRoom } from "@/lib/data/rooms";
 
 export type ActionState = { error?: string; success?: string };
@@ -85,6 +85,18 @@ export async function updateWorkspaceUserRoleAction(_: ActionState, formData: Fo
     return { success: "User role updated." };
   } catch (error) {
     return { error: error instanceof Error ? error.message : "Couldn't update user role." };
+  }
+}
+
+export async function setWorkspaceUserPasswordAction(_: ActionState, formData: FormData): Promise<ActionState> {
+  try {
+    const password = String(formData.get("password") ?? "");
+    if (password !== String(formData.get("confirmation") ?? "")) throw new Error("The passwords do not match.");
+    await setWorkspaceUserPassword(String(formData.get("user_id") ?? ""), password);
+    revalidatePath("/admin");
+    return { success: "Password updated. Give the new password to the user securely." };
+  } catch (error) {
+    return { error: error instanceof Error ? error.message : "Couldn't update the password." };
   }
 }
 

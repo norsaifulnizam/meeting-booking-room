@@ -129,6 +129,13 @@ nav a.active { color:var(--blue); background:#fff; }
 .user-directory-head { color:var(--muted); font-size:.7rem; font-weight:700; letter-spacing:.05em; padding-bottom:10px; text-transform:uppercase; }
 .user-directory-row { border-top:1px solid var(--line); padding:14px 0; font-size:.84rem; }
 .role-chip { color:var(--blue); font-size:.72rem; font-weight:700; text-transform:capitalize; }
+.user-access-actions { display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
+.password-control { display:grid; gap:5px; justify-items:start; }
+.password-admin-form { display:grid; gap:8px; min-width:220px; }
+.password-admin-form label { display:grid; gap:4px; color:var(--ink); font-size:.72rem; font-weight:700; }
+.password-admin-form input { min-width:0; }
+.password-admin-form .password-requirements { margin:0; }
+.password-admin-actions { display:flex; align-items:center; gap:10px; }
 .remove-user-form { display:grid; gap:5px; justify-items:start; }
 .remove-access { min-height:34px; color:var(--error); font-size:.73rem; }
 .role-control { display:grid; grid-template-columns:minmax(82px,1fr) auto; gap:5px; align-items:center; }

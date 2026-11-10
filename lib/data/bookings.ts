@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import type { AdminBooking, Booking, BookingAuditEvent, WorkspaceUser } from "./types";
 import { getCurrentMembership, requireAdmin } from "./auth";
 import { getCurrentWorkspace } from "./workspaces";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 export type BookingSlot = Pick<Booking, "room_id" | "start_time" | "end_time" | "attendees"> & { booked_by: string; meeting_title: string };
 
@@ -168,6 +169,23 @@ export async function updateWorkspaceUserRole(userId: string, role: "admin" | "m
     target_user: userId,
     target_role: role,
   });
+  if (error) throw new Error(error.message);
+}
+
+export async function setWorkspaceUserPassword(userId: string, password: string) {
+  const membership = await requireAdmin();
+  if (!userId) throw new Error("Choose a user to update.");
+  if (userId === membership.userId) throw new Error("Use Forgot password to change your own password.");
+  if (password.length < 8 || password.length > 12 || !/[A-Z]/.test(password) || !/[a-z]/.test(password) || !/\d/.test(password)) {
+    throw new Error("The password must be 8 to 12 characters and include uppercase, lowercase, and a number.");
+  }
+
+  const users = await listWorkspaceUsers();
+  const user = users.find((item) => item.user_id === userId);
+  if (!user?.is_active) throw new Error("Only active workspace users can have their password changed.");
+  if (user.role === "owner") throw new Error("The protected owner account password cannot be changed here.");
+
+  const { error } = await createAdminClient().auth.admin.updateUserById(userId, { password });
   if (error) throw new Error(error.message);
 }
 

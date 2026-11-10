@@ -4,6 +4,7 @@ import { RemoveUserAccess } from "@/components/remove-user-access";
 import { RestoreUserAccess } from "@/components/restore-user-access";
 import { RoomSettings } from "@/components/room-settings";
 import { UserRoleControl } from "@/components/user-role-control";
+import { SetUserPassword } from "@/components/set-user-password";
 import { SessionGuard } from "@/components/session-guard";
 import { listBookingAuditEvents, listUpcomingBookings, listWorkspaceUsers } from "@/lib/data/bookings";
 import { getCurrentMembership } from "@/lib/data/auth";
@@ -65,7 +66,7 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
           <span data-label="User"><strong>{user.full_name}</strong>{!user.is_active && <small className="inactive-label">Inactive</small>}</span>
           <span data-label="Office email" className="booking-account">{user.email}</span>
           <span data-label="Role">{user.user_id === membership.userId || user.role === "owner" ? <span className="role-chip">{user.role}</span> : <UserRoleControl userId={user.user_id} role={user.role === "admin" ? "admin" : "member"} />}</span>
-          <span data-label="Access">{user.user_id === membership.userId || user.role === "owner" ? <small className="muted">Protected account</small> : user.is_active ? <RemoveUserAccess userId={user.user_id} email={user.email} /> : <RestoreUserAccess userId={user.user_id} />}</span>
+          <span data-label="Access">{user.user_id === membership.userId || user.role === "owner" ? <small className="muted">Protected account</small> : user.is_active ? <div className="user-access-actions"><SetUserPassword userId={user.user_id} email={user.email} /><RemoveUserAccess userId={user.user_id} email={user.email} /></div> : <RestoreUserAccess userId={user.user_id} />}</span>
         </div>)}
       </div>}
     </section>
